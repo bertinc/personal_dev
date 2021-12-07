@@ -6,31 +6,42 @@ def main():
     print(const.TITLE)
     db = DB()
     db.init_new_db()
+    hat_trick_collection = {}
     #do_hat_trick(db, 'The Girls', age=const.KIDS, gender=const.GIRLS)
     #do_hat_trick(db, 'The Boys', age=const.KIDS, gender=const.BOYS)
     #do_hat_trick(db, 'The Ladies', age=const.ADULTS, gender=const.GIRLS)
     #do_hat_trick(db, 'The Guys', age=const.ADULTS, gender=const.BOYS)
-    do_hat_trick(db, 'The Kids', age=const.KIDS)
-    do_hat_trick(db, 'The Grownups', age=const.ADULTS)
+    title, names = do_hat_trick(db, 'The Kids', age=const.KIDS)
+    hat_trick_collection[title] = names
+    title, names = do_hat_trick(db, 'The Grownups', age=const.ADULTS)
+    hat_trick_collection[title] = names
     #do_hat_trick(db, 'Everyone')
     #do_hat_trick(db, 'All Females', gender=const.GIRLS)
     #do_hat_trick(db, 'All Males', gender=const.BOYS)
+
+    pretty_print_multiple_to_file(hat_trick_collection)
 
 def do_hat_trick(db, title, age = '', gender = ''):
     """
     1. Query the database for the list of names based on parameters.
     2. Draw the names.
     3. Print the results in a human readable format.
+    4. Return the results in case we want to do more.
 
     Args:
         db (DB): The instance of the database class
         title (str): For pretty print purposes, the title of the list we are making.
         age (str, optional): If we specify an age (kids/adults). Defaults to ''.
         gender (str, optional): If we specify a gender (f/m). Defaults to ''.
+    
+    Returns:
+        str: Title with spaces as underscores
+        Dictionary: Names
     """
     hs_with_names = db.get_households_with_names(age = age, gender = gender)
     final_names = get_final_names(db, hs_with_names)
     pretty_print_names(final_names, title)
+    return title.replace(' ', '_'), final_names
 
 def pretty_print_names(names, title):
     """
@@ -47,6 +58,25 @@ def pretty_print_names(names, title):
         right_name = val.ljust(8)
         print(f"{left_name} |  {right_name}")
     print('--------------------')
+
+def pretty_print_multiple_to_file(names_and_titles):
+    """
+    Prints the list in a human readable format with a title to a file.
+
+    Args:
+        names_and_titles (Dictionary): The names with their drawn assignments and titles for printing.
+    """
+    out = open(f'{const.PATH}\\names.txt', "w")
+    out.write(const.TITLE)
+    for title, names in names_and_titles.items():
+        out.write(f"\n{title}\n")
+        out.write('--------------------\n')
+        for key, val in names.items():
+            left_name = key.ljust(8)
+            right_name = val.ljust(8)
+            out.write(f"{left_name} |  {right_name}\n")
+        out.write('--------------------\n')
+    out.close()
 
 def get_final_names(db, hs_with_names, max = 100):
     """

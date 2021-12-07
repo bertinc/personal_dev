@@ -1,19 +1,18 @@
 import sqlite3
-import os
 import constants as const
 
 class DB:
     """
-    Does all the needed database intersactions.
+    Does all the needed database interactions.
     """
     def __init__(self) -> None:
-        self.file_path = os.path.dirname(os.path.realpath(__file__))
+        self.file_path = const.PATH
         self.db_file = f"{self.file_path}\\households.db"
         self.sql_file = f"{self.file_path}\\init_db.sql"
         self.conn = None
         self.exludes = {}
     
-    def get_excludes(self, name):
+    def get_excludes(self, name = ''):
         """
         If any excludes were set on the database for this name, they are returned
         as a list.
@@ -24,6 +23,10 @@ class DB:
         Returns:
             List: names to exclude from random draw, empty if there are none
         """
+        if not name:
+            # if no name was provided, just return the whole thing
+            # put it in a list for consistancy
+            return ['ALL EXCLUDES', len(self.exludes), self.exludes]
         if name in self.exludes.keys():
             return self.exludes[name]
         else:
