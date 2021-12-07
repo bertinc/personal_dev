@@ -11,6 +11,8 @@ CREATE TABLE people (
     exclude TEXT DEFAULT ''
 );
 
+-- the exclude column is a pipe delimited list of first names that a person should not get
+-- example: 'Natty|Gabby'
 INSERT INTO people VALUES (NULL, 'Robert', 'Rallison', 1, 'm', 'ral', 0, '');
 INSERT INTO people VALUES (NULL, 'Tori', 'Rallison', 1, 'f', 'ral', 0, '');
 INSERT INTO people VALUES (NULL, 'Jack', 'Rallison', 0, 'm', 'ral', 0, '');
@@ -34,9 +36,3 @@ INSERT INTO people VALUES (NULL, 'Missy', 'Vasquez', 1, 'f', 'tyr', 1, '');
 INSERT INTO people VALUES (NULL, 'Ryan', 'Johnson', 1, 'm', 'joh', 1, '');
 INSERT INTO people VALUES (NULL, 'Sherice', 'Johnson', 1, 'f', 'joh', 1, '');
 INSERT INTO people VALUES (NULL, 'Louis', 'Johnson', 0, 'm', 'joh', 1, '');
-
-DROP TABLE IF EXISTS rules;
-
-CREATE TABLE rules (
-    rid INTEGER PRIMARY KEY ASC
-)

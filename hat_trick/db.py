@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import constants as const
 
 class DB:
     """
@@ -10,6 +11,13 @@ class DB:
         self.db_file = f"{self.file_path}\\households.db"
         self.sql_file = f"{self.file_path}\\init_db.sql"
         self.conn = None
+        self.exludes = {}
+    
+    def get_excludes(self, name):
+        if name in self.exludes.keys():
+            return self.exludes[name]
+        else:
+            return []
 
     def close_connection(self):
         if self.conn:
@@ -77,13 +85,14 @@ class DB:
             cur = self.conn.cursor()
             for row in cur.execute(query):
                 # if we haven't seen this household yet, initialize the names list
-                if row[-1] not in response.keys():
-                    response[row[-1]] = []
-                if row[1]:
-                    element = {row[0]: row[1].split('|')}
-                    response[row[-1]].append(element)
-                else:
-                    response[row[-1]].append(row[0])
+                if row[const.HOUSEHOLD_ID] not in response.keys():
+                    response[row[const.HOUSEHOLD_ID]] = []
+                # this means we have excludes to handle
+                if row[const.EXCLUDE]:
+                    # element = {row[0]: row[1].split('|')}
+                    self.exludes[row[const.FIRSTNAME]] = row[const.EXCLUDE].split('|')
+                    # response[row[-1]].append(element)
+                response[row[const.HOUSEHOLD_ID]].append(row[const.FIRSTNAME])
         except sqlite3.Error as e:
             print(e)
         finally:
@@ -99,7 +108,7 @@ class DB:
             self.conn = sqlite3.connect(self.db_file)
             cur = self.conn.cursor()
             for row in cur.execute(query):
-                response.append(row[0])
+                response.append(row[1])
         except sqlite3.Error as e:
             print(e)
         finally:
