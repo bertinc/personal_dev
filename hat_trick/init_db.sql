@@ -13,8 +13,8 @@ CREATE TABLE people (
 
 -- the exclude column is a pipe delimited list of first names that a person should not get
 -- example: 'Natty|Gabby'
-INSERT INTO people VALUES (NULL, 'Robert', 'Rallison', 1, 'm', 'ral', 0, '');
-INSERT INTO people VALUES (NULL, 'Tori', 'Rallison', 1, 'f', 'ral', 0, '');
+INSERT INTO people VALUES (NULL, 'Robert', 'Rallison', 1, 'm', 'ral', 0, 'Lori');
+INSERT INTO people VALUES (NULL, 'Tori', 'Rallison', 1, 'f', 'ral', 0, 'Chris|Lexy');
 INSERT INTO people VALUES (NULL, 'Jack', 'Rallison', 0, 'm', 'ral', 0, '');
 INSERT INTO people VALUES (NULL, 'Brianna', 'Rallison', 0, 'f', 'ral', 0, '');
 INSERT INTO people VALUES (NULL, 'Gabby', 'Averatt', 1, 'f', 'ave', 0, '');

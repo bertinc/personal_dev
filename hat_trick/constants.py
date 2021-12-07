@@ -4,5 +4,5 @@ HOUSEHOLD_ID = -1
 FIRSTNAME = 0
 KIDS = 'kids'
 ADULTS = 'adults'
-GIRL = 'f'
-BOY = 'm'
+GIRLS = 'f'
+BOYS = 'm'

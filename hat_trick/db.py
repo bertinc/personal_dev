@@ -14,18 +14,31 @@ class DB:
         self.exludes = {}
     
     def get_excludes(self, name):
+        """
+        If any excludes were set on the database for this name, they are returned
+        as a list.
+
+        Args:
+            name (str): the name we are checking for
+
+        Returns:
+            List: names to exclude from random draw, empty if there are none
+        """
         if name in self.exludes.keys():
             return self.exludes[name]
         else:
             return []
 
     def close_connection(self):
+        """
+        Close the connection.
+        """
         if self.conn:
             self.conn.close()
 
     def init_new_db(self):
         """
-        Initialize the database from a script.
+        Initialize the database from an SQL script.
         """
         try:
             self.conn = sqlite3.connect(self.db_file)
@@ -68,7 +81,18 @@ class DB:
         return response
     
     def get_households_with_names(self, age = '', gender = ''):
-        # build where clause
+        """
+        Get the names grouped by household. We can also request a specific gender or age category
+        or a combination of the two.
+
+        Args:
+            age (str, optional): Accepted values are adults or kids. Defaults to ''.
+            gender (str, optional): Accepted values are f or m. Defaults to ''.
+
+        Returns:
+            Dictionary: the keys are the households and the values are a list of names in each household
+        """
+        # build WHERE clause
         where = 'WHERE ignore = 0'
         if age:
             if age == 'adults':
@@ -78,7 +102,7 @@ class DB:
             where += f' AND adult = {stage}'
         if gender:
             where += f' AND gender = \'{gender}\''
-        query = f"SELECT first, exclude, household_id FROM people {where} ORDER BY household_id"
+        query = f"SELECT first, exclude, household_id FROM people {where} ORDER BY RANDOM()"
         response = {}
         try:
             self.conn = sqlite3.connect(self.db_file)
@@ -87,11 +111,9 @@ class DB:
                 # if we haven't seen this household yet, initialize the names list
                 if row[const.HOUSEHOLD_ID] not in response.keys():
                     response[row[const.HOUSEHOLD_ID]] = []
-                # this means we have excludes to handle
+                # this means we have excludes to save for later
                 if row[const.EXCLUDE]:
-                    # element = {row[0]: row[1].split('|')}
                     self.exludes[row[const.FIRSTNAME]] = row[const.EXCLUDE].split('|')
-                    # response[row[-1]].append(element)
                 response[row[const.HOUSEHOLD_ID]].append(row[const.FIRSTNAME])
         except sqlite3.Error as e:
             print(e)
@@ -100,6 +122,12 @@ class DB:
         return response
 
     def get_unique_households(self):
+        """
+        Get all unique household ids.
+
+        Returns:
+            List: all unique household ids
+        """
         # build where clause
         where = 'WHERE ignore = 0'
         query = f"SELECT DISTINCT household_id FROM people {where}"
@@ -108,7 +136,7 @@ class DB:
             self.conn = sqlite3.connect(self.db_file)
             cur = self.conn.cursor()
             for row in cur.execute(query):
-                response.append(row[1])
+                response.append(row[0])
         except sqlite3.Error as e:
             print(e)
         finally:
