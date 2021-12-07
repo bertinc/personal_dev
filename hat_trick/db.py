@@ -28,6 +28,20 @@ class DB:
             return self.exludes[name]
         else:
             return []
+    
+    def add_exclude(self, name, excludes):
+        """
+        If you need to add an exclude programatically instead of editing the database
+        send a name and a list of names. If the exclude already exists, it will extend it.
+
+        Args:
+            name (str): Name with exclusions. Example: 'Gabby'
+            excludes (List): List of names to exclude. Example: ['Robert', 'Tori']
+        """
+        if name in self.exludes.keys():
+            self.exludes[name].extend(excludes)
+        else:
+            self.exludes[name] = excludes
 
     def close_connection(self):
         """
