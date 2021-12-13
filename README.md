@@ -1,10 +1,10 @@
 # personal_dev
-Organization:
+## Organization:
 Each project is separated and fully encapsulated in individual folders.
 
-Instructions by Project
+## Instructions by Project
 
-hat_trick:
+### hat_trick:
 
 requirements - Python 3.x
 to run - python pull_names.py
