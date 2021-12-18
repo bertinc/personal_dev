@@ -1,5 +1,6 @@
 import sqlite3
 import constants as const
+import os
 
 class DB:
     """
@@ -7,8 +8,8 @@ class DB:
     """
     def __init__(self) -> None:
         self.file_path = const.PATH
-        self.db_file = f"{self.file_path}\\households.db"
-        self.sql_file = f"{self.file_path}\\init_db.sql"
+        self.db_file = os.sep.join([self.file_path, 'households.db'])
+        self.sql_file = os.sep.join([self.file_path, 'init_db.sql'])
         self.conn = None
         self.exludes = {}
     
