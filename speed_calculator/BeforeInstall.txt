@@ -1,0 +1,1 @@
+Speed Calculator is a simple tool meant to make it easy to experiment with different speeds, times and distances to run, walk, swim, bike, or even crawl.

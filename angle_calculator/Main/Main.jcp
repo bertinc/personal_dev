@@ -1,0 +1,22 @@
+! ** JCreator Project File (C)2000
+! ********** DO NOT EDIT *********
+
+VERSION := "1.10"
+LABEL := "Main"
+JDKPROFILE := "j2sdk1.4.1_01"
+ACTIVE := "1"
+OUTPUTPATH := "\\class_files"
+COMPILER := "<Default>"
+
+! Start RunTime Configuration Structure
+#[BeginRunTime]LABEL := "<Default>" RUNAPPLIC := "" RUNAPPLET := "" PARAM := "" RUN := "Main" CHECK := "10" #[EndRunTime]
+! Start Required Libraries Structure
+
+! Start Project Folder Structure
+#[BeginFolder]
+LABEL := "Root"
+FILTER := ""
+
+#[BeginFile]SOURCE := "\\Main.java" #[EndFile]
+#[BeginFile]SOURCE := "\\AngleCalculator.java" #[EndFile]
+#[EndFolder]

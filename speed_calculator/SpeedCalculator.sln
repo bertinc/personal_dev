@@ -1,0 +1,58 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "SpeedCalculatorApp", "SpeedCalculatorApp\SpeedCalculatorApp.vbproj", "{7649B024-1924-4350-BFE5-F657EC6FF040}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C} = {C2320B0D-5628-47B0-9A3A-5D43326F125C}
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3} = {EF8A602E-55A5-40F1-B3D0-213B071DF1E3}
+	EndProjectSection
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DefaultSettingsController", "DefaultSettingsController\DefaultSettingsController.vbproj", "{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CalorieCalculator", "CalorieCalculator\CalorieCalculator.vbproj", "{C2320B0D-5628-47B0-9A3A-5D43326F125C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Debug|x86.ActiveCfg = Debug|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Debug|x86.Build.0 = Debug|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Release|Any CPU.ActiveCfg = Release|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Release|Mixed Platforms.Build.0 = Release|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Release|x86.ActiveCfg = Release|x86
+		{7649B024-1924-4350-BFE5-F657EC6FF040}.Release|x86.Build.0 = Release|x86
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{EF8A602E-55A5-40F1-B3D0-213B071DF1E3}.Release|x86.ActiveCfg = Release|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C2320B0D-5628-47B0-9A3A-5D43326F125C}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

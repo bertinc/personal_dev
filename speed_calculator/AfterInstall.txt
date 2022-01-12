@@ -1,0 +1,11 @@
+Thank you for using Speed Calculator v0.9.1
+
+This program will caculate speed, time, and distance based on user input.  It will also estimate expected calories burned based on speed, weight, and time.  The estimate is calculated by using a Metabolic Equivalent (MET) table.
+
+kcals/min = MET x kg / 60
+
+total calories = (kcals/min) x minutes
+
+This is only an estimate at best and should not be used as a difinitive calorie count.  The MET value is based on an intesity chart.  These values can be viewed and updated by editing the "met.xml" file in the install directory.
+
+Please send comments and/or bug reports to bertinc@gmail.com.  Thanks!
