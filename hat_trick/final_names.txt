@@ -1,0 +1,29 @@
+
+-------------------
+|  Hat Trick 2.0  |
+-------------------
+
+The_Kids
+--------------------
+Jack     |  Haiden  
+Brianna  |  Riley   
+Haiden   |  Jack    
+Annie    |  Eleanore
+Easton   |  Brianna 
+Eleanore |  Annie   
+Riley    |  Easton  
+--------------------
+
+The_Grownups
+--------------------
+Lori     |  Tori    
+Tori     |  Melissa 
+Robert   |  Tyrel   
+Lexy     |  Gabby   
+Chris    |  Missy   
+Missy    |  Colton  
+Tyrel    |  Lexy    
+Melissa  |  Robert  
+Gabby    |  Lori    
+Colton   |  Chris   
+--------------------
