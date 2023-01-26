@@ -1,8 +1,9 @@
 import random
 from db import DB
 import constants as const
+import sys
 
-def main():
+def main(argv):
     print(const.TITLE)
     db = DB()
     db.init_new_db()
@@ -18,6 +19,9 @@ def main():
     #do_hat_trick(db, 'Everyone')
     #do_hat_trick(db, 'All Females', gender=const.GIRLS)
     #do_hat_trick(db, 'All Males', gender=const.BOYS)
+    if '-excludes' in argv:
+        print(db.get_excludes())
+    print(argv)
 
     pretty_print_multiple_to_file(hat_trick_collection)
 
@@ -167,4 +171,4 @@ def execute_hat_trick(db, hs_with_names):
     return hat_trick_final_picks
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
