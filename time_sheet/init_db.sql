@@ -1,10 +1,10 @@
 DROP TABLE IF EXISTS entries;
 
-CREATE TABLE people (
-    eid INTEGER PRIMARY KEY ASC,
-    entry_date INT,
+CREATE TABLE entries (
+    date TEXT NOT NULL,
     description TEXT,
-    start_time TEXT,
-    esapsed_time TEXT,
-    URL TEXT DEFAULT ''
+    start TEXT NOT NULL,
+    duration INTEGER,
+    notes TEXT,
+    PRIMARY KEY(date,start)
 );
