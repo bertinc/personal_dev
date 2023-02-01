@@ -55,3 +55,29 @@ class DB:
             print(e)
         finally:
             self.close_connection()
+
+    def get_report_between(self, start, end):
+        try:
+            self.conn = sqlite3.connect(self.db_file)
+            cur = self.conn.cursor()
+            query_str = f'SELECT * FROM entries WHERE date BETWEEN \'{start}\' AND \'{end}\' ORDER BY date ASC, start ASC'
+            cur.execute(query_str)
+            response = cur.fetchall()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            self.close_connection()
+        return response
+
+    def get_report_all(self):
+        try:
+            self.conn = sqlite3.connect(self.db_file)
+            cur = self.conn.cursor()
+            query_str = f'SELECT * FROM entries ORDER BY date ASC, start ASC'
+            cur.execute(query_str)
+            response = cur.fetchall()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            self.close_connection()
+        return response

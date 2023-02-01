@@ -1,18 +1,5 @@
 # DT: is for datatime, this represents the start of a day
 # a log entry consists of a description, 12 hour start time, duration in minutes or hours:minutes, and an optional URL
 # DOC: comes imediately after a log entry to link notes to an entry
-DT:01-23-2023
-discussion with sam;4:00pm;15
-overview of r&d wishlist with Elroy;4:15pm;1:45
-following and questioning Cory;6:00pm;3:00
-DT:01-24-2023
-engineering meeting;1:00pm;1:45
-chat with Elroy about fringe pattern issue;4:15pm;45
-troubleshooting LVP table movement issue;5:00pm;30
-DOC:Some of the large flats had foam or rubber between the bolts and glass that could degrade. Lots of optics to expect to keep still. And the film plan glass could be delaminating. 
-more discussion with Andrew and Elroy about fringe pattern;5:30pm;30
-tuning, capping, and testing pulse compression gratings with Cory;6:00pm;3:00
-DOC:Trying out different capping processes with different wedge and alignment to try to reproduce the issue. No positive results produced.
-DT:01-25-2023
-planning with Joel to shadow film making process;4:30pm;30
-scraping, tuning, capping pulse comression gratings with Cory;5:00pm;4:15
+DT:02-01-2023
+scraping, tuning, capping with Cory;4:00pm;5:00

@@ -4,7 +4,7 @@ CREATE TABLE entries (
     date TEXT NOT NULL,
     description TEXT,
     start TEXT NOT NULL,
-    duration INTEGER,
+    duration TEXT,
     notes TEXT,
     PRIMARY KEY(date,start)
 );
