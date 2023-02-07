@@ -1,6 +1,7 @@
 import db
 import argparse
 import constants as const
+import calendar
 from datetime import datetime, timedelta
 
 def manage_timesheet(args):
@@ -21,6 +22,9 @@ def manage_timesheet(args):
             start, end = 'beginning', 'end'
         elif args.current:
             start, end = _get_current_start_end()
+            response = timesheet_db.get_report_between(start, end)
+        elif args.month:
+            start, end = _get_month_start_end(args.month)
             response = timesheet_db.get_report_between(start, end)
         generate_report(start, end, response)
 
@@ -121,6 +125,13 @@ def _get_first_tuesday(first_day_of_the_month):
         offset += 7
     return first_day_of_the_month + timedelta(offset)
 
+def _get_month_start_end(month):
+    today = datetime.now()
+    first_last = calendar.monthrange(today.year, month)
+    first = datetime(today.year, month, first_last[0])
+    last = datetime(today.year, month, first_last[1])
+    return first.strftime(const.DATE_FORMAT), last.strftime(const.DATE_FORMAT)
+
 def generate_report(start, end, data):
     total_minutes = 0
     just_long = const.LONG_JUSTIFICATION
@@ -210,7 +221,6 @@ def _convert_time(time, to_twelve_hour=True):
             hours_str = str(hours + 12)
         return f'{hours_str}:{mins_str}'
 
-
 def run():
     desc = "Timesheet importer tool."
     final_note = "Don't forget to clear your times sheet after each use!"
@@ -228,6 +238,7 @@ def run():
     arg_report_timesheet.add_argument('--pay', '--p', action='store_true', help='Report hours with expected pay.')
     arg_report_timesheet.add_argument('-start', '-s', help='Start date.')
     arg_report_timesheet.add_argument('-end', '-e', help='End date')
+    arg_report_timesheet.add_argument('-month', '-m', type=int, help='To request a specific month in the current year.')
 
     args = parser.parse_args()
     manage_timesheet(args)

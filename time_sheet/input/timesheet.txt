@@ -2,4 +2,12 @@
 # a log entry consists of a description, 12 hour start time, duration in minutes or hours:minutes, and an optional URL
 # DOC: comes imediately after a log entry to link notes to an entry
 DT:02-01-2023
-scraping, tuning, capping with Cory;4:00pm;5:00
+discussion with Tom, Laura, and Andrew regarding 50um films;3:45pm;2:45
+notes writup ragarding shadowing most processes in the lap;6:30pm;2:00
+DT:02-06-2023
+notes compilation;1:00pm;45
+DT:02-07-2023
+discusson with Elroy conserning R&D priorities and direction;11:00am;1:15
+planning with Tom to run initial thick film tests;12:15pm;30
+gratings engineering meeting;1:00pm;1:30
+substrate and rigging setup for 50um thick film tests;3:45pm;5:00
