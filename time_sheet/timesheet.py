@@ -10,25 +10,34 @@ def manage_timesheet(args):
     response = None
     start = None
     end = None
+    # IMPORTING DATA
     if hasattr(args, 'file'):
         entries = import_entries(args)
         timesheet_db.insert_bulk_entries(entries)
+    
+    # REPORTING DATA
     elif hasattr(args, 'start'):
         if args.start and args.end:
+            # a specific start and end was provided
             start, end = args.start, args.end
             response = timesheet_db.get_report_between(_format_date(start), _format_date(end))
         elif args.all:
+            # you just want everything ever entered in the timesheet
             response = timesheet_db.get_report_all()
             start, end = 'beginning', 'end'
         elif args.current:
+            # whatever the current pay period is
             start, end = _get_current_start_end()
             response = timesheet_db.get_report_between(start, end)
         elif args.month:
-            start, end = _get_month_start_end(args.month)
+            # report for a chosen month
+            start, end = _get_month_start_end(args.month, args.year)
+            print(f'{start} to {end}')
             response = timesheet_db.get_report_between(start, end)
         generate_report(start, end, response)
 
         if args.pay:
+            # because somethings you just want to see some extra numbers
             report_hours_with_pay(start, end, response)
             
 
@@ -52,9 +61,6 @@ def import_entries(args):
             if new_entry:
                 new_entry['added'] = True
                 entry_list.append(new_entry['values'])
-            # date = datetime.strptime(date_str,'%m-%d-%Y')
-            # timestamp = int(datetime.timestamp(date) * 1000)
-            # print(timestamp)
         # 2. If it's a DOC then we should have an entry ready for insert.
         #    Add the DOC to that entry.
         elif clean_line.startswith('DOC:'):
@@ -96,47 +102,93 @@ def _format_date(date_string):
     # convert to yyyy-mm-dd to allow easy search
     return f'{date_array[2]}-{date_array[0]}-{date_array[1]}'
 
-def _get_current_start_end(today=None):
-    if not today:
-        today = datetime.now()
-    start = today.strftime(const.DATE_FORMAT)
-    end = today.strftime(const.DATE_FORMAT)
+def _get_current_start_end():
+    """
+    Figure out how far we are into the current month. If we are at or before the
+    first Tuesday, then return the start and end dates for the previous month. 
+    Otherwise return start and end dates for current month.
+
+    Returns:
+        tuple: The start end end date strings
+    """
+    today = datetime.now()
     first_day = datetime(today.year, today.month, 1)
     first_tuesday = _get_first_tuesday(first_day)
-    if today < first_tuesday:
-        # in this case, we need to get the first tuesday of last month
+    if today <= first_tuesday and today >= first_day:
+        # in this case, we need to get the first and last day of last month
         prev_month = first_day - timedelta(days=1)
-        first_day_prev_month = datetime(prev_month.year, prev_month.month, 1)
-        first_tuesday_prev_month = _get_first_tuesday(first_day_prev_month)
-        # we actually want the day before the first Tuesday, which could technically
-        # take us to the previous month
-        first_monday = first_tuesday - timedelta(days=1)
-        start = first_tuesday_prev_month.strftime(const.DATE_FORMAT)
-        end = first_monday.strftime(const.DATE_FORMAT)
+        start, end = _get_month_start_end(prev_month, None)
     else:
-        # otherwise, today is still in the same month of the start
-        start = first_tuesday.strftime(const.DATE_FORMAT)
+        # otherwise, we are after the furst tuesday so pass back values for this month
+        start, end = _get_month_start_end(today.month, None)
 
     return start, end
 
 def _get_first_tuesday(first_day_of_the_month):
+    """
+    Does exactly as it sounds. Give it any first day of the month and it will
+    pass pack the furst Tuesday of that month.
+
+    Args:
+        first_day_of_the_month (datetime): First day of the month
+
+    Returns:
+        datetime: first tuesday of the month
+    """
+    # This should give us the closest Tuesday before the current day
     offset = 1 - first_day_of_the_month.weekday()
     if offset < 0:
+        # if it's negative, the closest previous Tuesday was last month
+        # add 7 days and you got the first Tuesday
         offset += 7
+    # return the first day of the month plus whatever offset we found
     return first_day_of_the_month + timedelta(offset)
 
-def _get_month_start_end(month):
-    today = datetime.now()
-    first_last = calendar.monthrange(today.year, month)
-    first = datetime(today.year, month, first_last[0])
-    last = datetime(today.year, month, first_last[1])
+def _get_month_start_end(month, year=None):
+    """
+    For a given month, and an optional year, return a string representation of
+    the first day of that month and last day of that month in year-month-day
+    formatting.
+
+    Args:
+        month (int): month where we need to find the first and last day
+        year (int): optional value if you want to specify the year
+
+    Returns:
+        tuple: start and end date strings with year-month-day formatting
+    """
+    if not year:
+        today = datetime.now()
+        if today.month < month:
+            # We will just assume it's January and we want
+            # December of last year. I know it's not super smart
+            # but I don't care for now.
+            year = today.year - 1
+        else:
+            year = today.year
+    # to get the first weekday of the month and the max number of days
+    # we don't actually care about the first value
+    first_last = calendar.monthrange(year, month)
+    first = datetime(year, month, 1)
+    last = datetime(year, month, first_last[1])
     return first.strftime(const.DATE_FORMAT), last.strftime(const.DATE_FORMAT)
 
 def generate_report(start, end, data):
+    """
+    Here we are just trying to generate a human readable report of whatever timesheet
+    data was queried.
+
+    Args:
+        start (str): start date in year-month-day format
+        end (str): end date in year-month-day format
+        data (list): data queried from the data base using start and end dates
+    """
     total_minutes = 0
     just_long = const.LONG_JUSTIFICATION
     just_short = const.SHORT_JUSTIFICATION
+    # 1. Print the TITLE
     print(const.TIMESHEET_TITLE.format(const.BORDER, start, end, const.BORDER))
+    # 2. Print the column names across the top
     cols = const.REPORT_COLUMNS
     cols_str = ''
     for col in cols:
@@ -147,6 +199,7 @@ def generate_report(start, end, data):
         else:
             cols_str += col.ljust(just_short)
     print(cols_str)
+    # 3. Print a line for each entry
     for entry in data:
         day = entry[const.DAY_INDEX].ljust(just_long)
         desc = entry[const.DESC_INDEX]
@@ -163,17 +216,36 @@ def generate_report(start, end, data):
             curr_min = int(hours_mins[0])
             total_minutes += curr_min
         curr_hours = curr_min / const.MINUTES_PER_HOUR
-        hours = str(curr_hours).ljust(just_short)
+        hours = str(f'{curr_hours:.2f}').ljust(just_short) # make sure hours is only 2 decimal places
         print(f'{day}{time}{hours}{desc}')
+    #4. Print the sumary
     hours = total_minutes / const.MINUTES_PER_HOUR
-    print(f'\nTotal hours: {hours}\n')
+    print(f'\nTotal hours: {hours:.2f}\n')
 
 def report_hours_with_pay(start, end, data):
+    """
+    A more informative set of calculations based on the accumulated hours across
+    a date range.
+
+    Args:
+        start (str): start date in year-month-day format
+        end (str): end date in year-month-day format
+        data (list): the data queried from the database
+    """
     total_minutes = 0
     print(const.PAY_TITLE.format(const.BORDER, start, end, const.BORDER))
+    prev_date = None
+    day_count = 0
     for entry in data:
         dur = entry[const.DUR_INDEX]
         hours_mins = dur.split(const.TIME_DELIMITER)
+        curr_date = entry[const.DAY_INDEX]
+        if not prev_date:
+            prev_date = curr_date
+            day_count += 1
+        elif prev_date and curr_date != prev_date:
+            day_count += 1
+        prev_date = curr_date
         if len(hours_mins) == 2:
             # If the split gives us two things then it's in hours and minutes
             curr_min = ((int(hours_mins[0]) * const.MINUTES_PER_HOUR) + int(hours_mins[1]))
@@ -186,6 +258,12 @@ def report_hours_with_pay(start, end, data):
     gross_pay = hours * const.RATE
     taxes = gross_pay * const.TAX_RATE
     net_pay = gross_pay - taxes
+    if day_count > 0:
+        hrs_per_day = hours / day_count
+    else:
+        hrs_per_day = 0
+    print(f'{"Days Worked: ":>17}{day_count}')
+    print(f'{"Hrs per day: ":>17}{hrs_per_day:.2f}')
     print(f'{"Total hours: ":>17}{hours:,.2f}')
     print(f'{"Tax Rate: ":>17}{const.TAX_RATE:.1%}')
     print(f'{"Gross Pay: $":>18}{gross_pay:,.2f}')
@@ -193,6 +271,18 @@ def report_hours_with_pay(start, end, data):
     print(f'{"Save for taxes: $":>18}{taxes:,.2f}\n')
 
 def _convert_time(time, to_twelve_hour=True):
+    """
+    Just a simple method to convert a time string back and forth. The database stores time in
+    military format to allow for easy sort order. But when we display time in a report, it's
+    in a nice twelve hour format for human eye consumption.
+
+    Args:
+        time (str): a string representation of time in hours:minutes (am/pm if not military) format
+        to_twelve_hour (bool, optional): Set to False if you want military. Defaults to True.
+
+    Returns:
+        str: time as a string in either twelve hour or military
+    """
     if to_twelve_hour:
         hours_mins = time.split(':')
         mins_str = str(hours_mins[1])
@@ -222,6 +312,10 @@ def _convert_time(time, to_twelve_hour=True):
         return f'{hours_str}:{mins_str}'
 
 def run():
+    """
+    Setup all the potential arguments that can be fed to this tool
+    and provide good help strings for usage.
+    """
     desc = "Timesheet importer tool."
     final_note = "Don't forget to clear your times sheet after each use!"
     parser = argparse.ArgumentParser(description=desc, epilog=final_note)
@@ -229,9 +323,11 @@ def run():
 
     subs = parser.add_subparsers(title='commands')
 
+    # Import new data
     arg_consume_file = subs.add_parser('import', help='Import timesheet entries from a file.')
     arg_consume_file.add_argument('-file', help='Filename of the plain text file to import.', default=timesheet_file)
 
+    # Generate reports
     arg_report_timesheet = subs.add_parser('report', help='Generate a timesheet report for management.')
     arg_report_timesheet.add_argument('--all', '--a', action='store_true', help='Report on the entire stored timesheet database.')
     arg_report_timesheet.add_argument('--current', '--c', action='store_true', help='Report based on current pay period.')
@@ -239,6 +335,7 @@ def run():
     arg_report_timesheet.add_argument('-start', '-s', help='Start date.')
     arg_report_timesheet.add_argument('-end', '-e', help='End date')
     arg_report_timesheet.add_argument('-month', '-m', type=int, help='To request a specific month in the current year.')
+    arg_report_timesheet.add_argument('-year', '-y', type=int, help='Optional if you want to specify a year with the month.')
 
     args = parser.parse_args()
     manage_timesheet(args)
