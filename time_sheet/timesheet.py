@@ -117,7 +117,7 @@ def _get_current_start_end():
     if today <= first_tuesday and today >= first_day:
         # in this case, we need to get the first and last day of last month
         prev_month = first_day - timedelta(days=1)
-        start, end = _get_month_start_end(prev_month, None)
+        start, end = _get_month_start_end(prev_month.month, None)
     else:
         # otherwise, we are after the furst tuesday so pass back values for this month
         start, end = _get_month_start_end(today.month, None)

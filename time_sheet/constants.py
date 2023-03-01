@@ -1,5 +1,8 @@
 import os
 
+# Because I am very much against magic numbers that cannot be changed in one place and
+# so I can reuse constant values.
+
 TIMESHEET_TITLE = '{}|  Timesheet for {} to {}  |{}'
 PAY_TITLE =       '{}|     Pay for {} to {}     |{}'
 BORDER = '\n--------------------------------------------\n'

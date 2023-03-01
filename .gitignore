@@ -3,3 +3,6 @@ hat_trick/names.txt
 hat_trick/__pycache__/constants.cpython-310.pyc
 hat_trick/__pycache__/db.cpython-310.pyc
 time_sheet/timesheet.db
+enc_dec_tool/dec.txt
+enc_dec_tool/enc.txt
+enc_dec_tool/__pycache__/constants.cpython-310.pyc
