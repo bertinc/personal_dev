@@ -6,3 +6,6 @@ time_sheet/timesheet.db
 enc_dec_tool/dec.txt
 enc_dec_tool/enc.txt
 enc_dec_tool/__pycache__/constants.cpython-310.pyc
+enc_dec_tool/__pycache__/constants.cpython-311.pyc
+time_sheet/__pycache__/constants.cpython-311.pyc
+time_sheet/__pycache__/db.cpython-311.pyc

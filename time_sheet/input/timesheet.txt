@@ -1,6 +1,5 @@
 # DT: is for datatime, this represents the start of a day
 # a log entry consists of a description, 12 hour start time, duration in minutes or hours:minutes, and an optional URL
 # DOC: comes imediately after a log entry to link notes to an entry
-DT:02-28-2023
-mold coating test #5;4:00pm;6:00
-DOC:https://docs.google.com/document/d/1JHlGQVdOBcP0Knq8qzJyTy3gKyzVwQWRXLzrAVdypcY/edit?usp=sharing
+DT:03-13-2023
+mold coating series 8;3:45pm;6:00
