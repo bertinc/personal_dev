@@ -94,6 +94,14 @@ def import_entries(args):
 
     timesheet_file.close()
 
+    # now clear the timesheet and add a timestamp for the last time it was imported
+    timesheet_file = open(args.file, 'w')
+    timesheet_file.write(const.DT_STR)
+    timesheet_file.write(const.ENTRY_STR)
+    timesheet_file.write(const.DOC_STR)
+    timesheet_file.write(const.LAST_IMPORT.format(datetime.now().strftime(const.LAST_IMPORT_FORMAT)))
+    timesheet_file.close()
+
     return entry_list
 
 def _format_date(date_string):

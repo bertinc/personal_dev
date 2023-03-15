@@ -1,5 +1,4 @@
-# DT: is for datatime, this represents the start of a day
-# a log entry consists of a description, 12 hour start time, duration in minutes or hours:minutes, and an optional URL
+# Date - DT:hh-mm-yyyy
+# Any number of log entries after a Date - some desctiption;h:m{am/pm};h:m or just m
 # DOC: comes imediately after a log entry to link notes to an entry
-DT:03-13-2023
-mold coating series 8;3:45pm;6:00
+# Last import on 03-15-2023 at 08:18 AM
