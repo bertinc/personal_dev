@@ -35,11 +35,19 @@ def manage_timesheet(args):
             start, end = _get_month_start_end(args.month, args.year)
             print(f'{start} to {end}')
             response = timesheet_db.get_report_between(start, end)
-        generate_report(start, end, response)
+        report = generate_report(start, end, response)
 
         if args.pay:
             # because somethings you just want to see some extra numbers
-            report_hours_with_pay(start, end, response)
+            pay = report_hours_with_pay(start, end, response)
+            report = report + pay
+        
+        # send to output file
+        report_filename = f'{const.PATH}\\report.txt'
+        report_file = open(report_filename, 'w')
+        for line in report:
+            report_file.write(line + '\n')
+        report_file.close()
             
 
 def import_entries(args):
@@ -195,7 +203,9 @@ def generate_report(start, end, data):
     total_minutes = 0
     just_long = const.LONG_JUSTIFICATION
     just_short = const.SHORT_JUSTIFICATION
+    output_str = []
     # 1. Print the TITLE
+    output_str.append(const.TIMESHEET_TITLE.format(const.BORDER, start, end, const.BORDER))
     print(const.TIMESHEET_TITLE.format(const.BORDER, start, end, const.BORDER))
     # 2. Print the column names across the top
     cols = const.REPORT_COLUMNS
@@ -207,6 +217,7 @@ def generate_report(start, end, data):
             cols_str += col
         else:
             cols_str += col.ljust(just_short)
+    output_str.append(cols_str)
     print(cols_str)
     # 3. Print a line for each entry
     for entry in data:
@@ -226,10 +237,13 @@ def generate_report(start, end, data):
             total_minutes += curr_min
         curr_hours = curr_min / const.MINUTES_PER_HOUR
         hours = str(f'{curr_hours:.2f}').ljust(just_short) # make sure hours is only 2 decimal places
+        output_str.append(f'{day}{time}{hours}{desc}')
         print(f'{day}{time}{hours}{desc}')
     #4. Print the sumary
     hours = total_minutes / const.MINUTES_PER_HOUR
+    output_str.append(f'\nTotal hours: {hours:.2f}\n')
     print(f'\nTotal hours: {hours:.2f}\n')
+    return output_str
 
 def report_hours_with_pay(start, end, data):
     """
@@ -242,6 +256,8 @@ def report_hours_with_pay(start, end, data):
         data (list): the data queried from the database
     """
     total_minutes = 0
+    output_str = []
+    output_str.append(const.PAY_TITLE.format(const.BORDER, start, end, const.BORDER))
     print(const.PAY_TITLE.format(const.BORDER, start, end, const.BORDER))
     prev_date = None
     day_count = 0
@@ -278,6 +294,16 @@ def report_hours_with_pay(start, end, data):
     print(f'{"Gross Pay: $":>18}{gross_pay:,.2f}')
     print(f'{"Net Pay: $":>18}{net_pay:,.2f}')
     print(f'{"Save for taxes: $":>18}{taxes:,.2f}\n')
+
+    output_str.append(f'{"Days Worked: ":>17}{day_count}')
+    output_str.append(f'{"Hrs per day: ":>17}{hrs_per_day:.2f}')
+    output_str.append(f'{"Total hours: ":>17}{hours:,.2f}')
+    output_str.append(f'{"Tax Rate: ":>17}{const.TAX_RATE:.1%}')
+    output_str.append(f'{"Gross Pay: $":>18}{gross_pay:,.2f}')
+    output_str.append(f'{"Net Pay: $":>18}{net_pay:,.2f}')
+    output_str.append(f'{"Save for taxes: $":>18}{taxes:,.2f}\n')
+
+    return output_str
 
 def _convert_time(time, to_twelve_hour=True):
     """
