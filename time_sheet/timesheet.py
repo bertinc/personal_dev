@@ -10,6 +10,7 @@ def manage_timesheet(args):
     response = None
     start = None
     end = None
+
     # IMPORTING DATA
     if hasattr(args, 'file'):
         entries = import_entries(args)
@@ -117,7 +118,7 @@ def _get_current_start_end():
     Otherwise return start and end dates for current month.
 
     Returns:
-        tuple: The start end end date strings
+        tuple: The start and end date strings
     """
     today = datetime.now()
     first_day = datetime(today.year, today.month, 1)

@@ -28,7 +28,7 @@ PAY_JUSTIFICATION = 18
 MINUTES_PER_HOUR = 60
 
 # This is the default stuff we put at the top of the timesheet file after import
-DT_STR = '# Date - DT:hh-mm-yyyy\n'
+DT_STR = '# Date - DT:mm-dd-yyyy\n'
 ENTRY_STR = '# Any number of log entries after a Date - some desctiption;h:m{am/pm};h:m or just m\n'
 DOC_STR = '# DOC: comes imediately after a log entry to link notes to an entry\n'
 LAST_IMPORT = '# Last import on {}\n'
