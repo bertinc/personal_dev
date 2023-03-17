@@ -13,7 +13,10 @@ def manage_timesheet(args):
 
     # IMPORTING DATA
     if hasattr(args, 'file'):
-        entries = import_entries(args)
+        entries, errors = import_entries(args)
+        if errors:
+            for error in errors:
+                print(error)
         timesheet_db.insert_bulk_entries(entries)
     
     # REPORTING DATA
@@ -33,7 +36,6 @@ def manage_timesheet(args):
         elif args.month:
             # report for a chosen month
             start, end = _get_month_start_end(args.month, args.year)
-            print(f'{start} to {end}')
             response = timesheet_db.get_report_between(start, end)
         report = generate_report(start, end, response)
 
@@ -42,12 +44,18 @@ def manage_timesheet(args):
             pay = report_hours_with_pay(start, end, response)
             report = report + pay
         
-        # send to output file
-        report_filename = f'{const.PATH}\\report.txt'
-        report_file = open(report_filename, 'w')
-        for line in report:
-            report_file.write(line + '\n')
-        report_file.close()
+        if args.fileout:
+            # send to output file
+            report_filename = f'{const.PATH}\\report.txt'
+            report_file = open(report_filename, 'w')
+            for line in report:
+                report_file.write(line + '\n')
+            report_file.close()
+            print(f'Output sent to {report_filename}')
+        else:
+            # or just print it to the console
+            for line in report:
+                print(line)
             
 
 def import_entries(args):
@@ -61,6 +69,7 @@ def import_entries(args):
     date_str = ''
     new_entry = {}
     entry_list = []
+    response = []
     for line in lines:
         clean_line = line.strip()
         # 1. If it's a date, then we are at the start of a day. Save the value
@@ -78,7 +87,7 @@ def import_entries(args):
                 vals_list[-1] = clean_line[4:]
                 new_entry['values'] = tuple(vals_list)
             else:
-                print("ERROR: We have a DOC with no entry!")
+                response.append("ERROR: We have a DOC with no entry!")
                 return
         # 3. If it's not a DOC or a date, then it's either a new entry, comment,
         #    or garbage. Prep for insert if it's an entry, otherwise, ignore it.
@@ -88,7 +97,7 @@ def import_entries(args):
                 # this is a comment or garbage
                 continue
             if not date_str:
-                print("ERROR: No date string for this entry!")
+                response.append("ERROR: No date string for this entry!")
                 return
             if new_entry and not new_entry['added']:
                 # if a previous entry exists, append it to the list now
@@ -111,7 +120,7 @@ def import_entries(args):
     timesheet_file.write(const.LAST_IMPORT.format(datetime.now().strftime(const.LAST_IMPORT_FORMAT)))
     timesheet_file.close()
 
-    return entry_list
+    return entry_list, response
 
 def _format_date(date_string):
     date_array = date_string.split('-')
@@ -206,7 +215,6 @@ def generate_report(start, end, data):
     output_str = []
     # 1. Print the TITLE
     output_str.append(const.TIMESHEET_TITLE.format(const.BORDER, start, end, const.BORDER))
-    print(const.TIMESHEET_TITLE.format(const.BORDER, start, end, const.BORDER))
     # 2. Print the column names across the top
     cols = const.REPORT_COLUMNS
     cols_str = ''
@@ -218,7 +226,6 @@ def generate_report(start, end, data):
         else:
             cols_str += col.ljust(just_short)
     output_str.append(cols_str)
-    print(cols_str)
     # 3. Print a line for each entry
     for entry in data:
         day = entry[const.DAY_INDEX].ljust(just_long)
@@ -238,11 +245,9 @@ def generate_report(start, end, data):
         curr_hours = curr_min / const.MINUTES_PER_HOUR
         hours = str(f'{curr_hours:.2f}').ljust(just_short) # make sure hours is only 2 decimal places
         output_str.append(f'{day}{time}{hours}{desc}')
-        print(f'{day}{time}{hours}{desc}')
     #4. Print the sumary
     hours = total_minutes / const.MINUTES_PER_HOUR
     output_str.append(f'\nTotal hours: {hours:.2f}\n')
-    print(f'\nTotal hours: {hours:.2f}\n')
     return output_str
 
 def report_hours_with_pay(start, end, data):
@@ -258,7 +263,6 @@ def report_hours_with_pay(start, end, data):
     total_minutes = 0
     output_str = []
     output_str.append(const.PAY_TITLE.format(const.BORDER, start, end, const.BORDER))
-    print(const.PAY_TITLE.format(const.BORDER, start, end, const.BORDER))
     prev_date = None
     day_count = 0
     for entry in data:
@@ -287,14 +291,7 @@ def report_hours_with_pay(start, end, data):
         hrs_per_day = hours / day_count
     else:
         hrs_per_day = 0
-    print(f'{"Days Worked: ":>17}{day_count}')
-    print(f'{"Hrs per day: ":>17}{hrs_per_day:.2f}')
-    print(f'{"Total hours: ":>17}{hours:,.2f}')
-    print(f'{"Tax Rate: ":>17}{const.TAX_RATE:.1%}')
-    print(f'{"Gross Pay: $":>18}{gross_pay:,.2f}')
-    print(f'{"Net Pay: $":>18}{net_pay:,.2f}')
-    print(f'{"Save for taxes: $":>18}{taxes:,.2f}\n')
-
+    
     output_str.append(f'{"Days Worked: ":>17}{day_count}')
     output_str.append(f'{"Hrs per day: ":>17}{hrs_per_day:.2f}')
     output_str.append(f'{"Total hours: ":>17}{hours:,.2f}')
@@ -365,6 +362,7 @@ def run():
     # Generate reports
     arg_report_timesheet = subs.add_parser('report', help='Generate a timesheet report for management.')
     arg_report_timesheet.add_argument('--all', '--a', action='store_true', help='Report on the entire stored timesheet database.')
+    arg_report_timesheet.add_argument('--fileout', '--f', action='store_true', help='Turn this on if you want the output sent to report.txt')
     arg_report_timesheet.add_argument('--current', '--c', action='store_true', help='Report based on current pay period.')
     arg_report_timesheet.add_argument('--pay', '--p', action='store_true', help='Report hours with expected pay.')
     arg_report_timesheet.add_argument('-start', '-s', help='Start date.')
