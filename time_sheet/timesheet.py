@@ -1,8 +1,9 @@
-import db
-import argparse
-import constants as const
-import calendar
+"""Main Timesheet Logic"""
 from datetime import datetime, timedelta
+import argparse
+import calendar
+import db
+import constants as const
 
 def manage_timesheet(args):
     timesheet_db = db.DB()
@@ -47,16 +48,14 @@ def manage_timesheet(args):
         if args.fileout:
             # send to output file
             report_filename = f'{const.PATH}\\report.txt'
-            report_file = open(report_filename, 'w')
-            for line in report:
-                report_file.write(line + '\n')
-            report_file.close()
-            print(f'Output sent to {report_filename}')
+            with open(report_filename, 'w', encoding='utf-8') as report_file:
+                for line in report:
+                    report_file.write(line + '\n')
+                print(f'Output sent to {report_filename}')
         else:
             # or just print it to the console
             for line in report:
                 print(line)
-            
 
 def import_entries(args):
     """
@@ -113,13 +112,11 @@ def import_entries(args):
     timesheet_file.close()
 
     # now clear the timesheet and add a timestamp for the last time it was imported
-    timesheet_file = open(args.file, 'w')
-    timesheet_file.write(const.DT_STR)
-    timesheet_file.write(const.ENTRY_STR)
-    timesheet_file.write(const.DOC_STR)
-    timesheet_file.write(const.LAST_IMPORT.format(datetime.now().strftime(const.LAST_IMPORT_FORMAT)))
-    timesheet_file.close()
-
+    with open(args.file, 'w', encoding='utf-8') as timesheet_file:
+        timesheet_file.write(const.DT_STR)
+        timesheet_file.write(const.ENTRY_STR)
+        timesheet_file.write(const.DOC_STR)
+        timesheet_file.write(const.LAST_IMPORT.format(datetime.now().strftime(const.LAST_IMPORT_FORMAT)))
     return entry_list, response
 
 def _format_date(date_string):
@@ -375,3 +372,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+    

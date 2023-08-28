@@ -1,6 +1,7 @@
+"""To make doing database operations easier"""
 import sqlite3
-import constants as const
 import os
+import constants as const
 
 class DB:
     """
@@ -73,7 +74,7 @@ class DB:
         try:
             self.conn = sqlite3.connect(self.db_file)
             cur = self.conn.cursor()
-            query_str = f'SELECT * FROM entries ORDER BY date ASC, start ASC'
+            query_str = 'SELECT * FROM entries ORDER BY date ASC, start ASC'
             cur.execute(query_str)
             response = cur.fetchall()
         except sqlite3.Error as e:
