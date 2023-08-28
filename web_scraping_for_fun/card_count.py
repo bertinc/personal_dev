@@ -16,43 +16,47 @@ out what I needed to do differently in my logic between the pages.
 """
 import requests
 from bs4 import BeautifulSoup
+import logging
 
 def main():
     """
-    Going to try using the class name 'elementor-row' to pull out all the list items related to cards.
+    Loop through a dictionary of urls to output the number of cards in each box set from the Huntress + Black Box pledge
+    of Catacombs & Castles 2nd Edition Kickstarter campaign.
     """
-    huntress_url = "https://support.elzra.com/docs/component-list-catacombs-castles-huntress/"
-    redbox_url = "https://support.elzra.com/docs/component-list-catacombs-red-box/"
-    blackbox_url = "https://support.elzra.com/docs/component-list-catacombs-black-box/"
+    logging.basicConfig()
+    logging.getLogger().setLevel(logging.DEBUG)
+    logger = logging.getLogger("card_count")
 
-    # Get the rows for the huntress box
-    rows_huntress = get_rows(huntress_url)
+    # Add as many urls as you like here from the components list pages by Elzra
+    urls = {
+        "huntress": "https://support.elzra.com/docs/component-list-catacombs-castles-huntress/",
+        "redbox": "https://support.elzra.com/docs/component-list-catacombs-red-box/",
+        "blackbox": "https://support.elzra.com/docs/component-list-catacombs-black-box/"
+    }
 
-    # get the rows for the red box which I think is KS extras
-    rows_redbox = get_rows(redbox_url)
+    all_cards = []
+    justify = 30
+    count_padding = 4
+    report = []  # Building a report so we can decide later out to produce output
+    for name, url in urls.items():
+        # put this in there so it looks less like it's doing nothing
+        logger.debug(f"Getting {name} cards")
+        rows = get_rows(url)
+        cards = get_cards(rows)
+        all_cards += cards
+        report.append(f"Cards in {name} box: {str(len(cards)).rjust(count_padding)}".rjust(justify))
+    report.append(f"Total Cards: {str(len(all_cards)).rjust(count_padding)}".rjust(justify))
 
-    # get the rows for the red box which I think is KS extras
-    rows_blackbox = get_rows(blackbox_url)
+    # Uncomment this if you want to see the card names
+    # print_card_names(all_cards)
 
-    # I could combine them but I think I like the idea of printing a card count for each separately
-    huntress_cards = get_cards(rows_huntress)
-    redbox_cards = get_cards(rows_redbox)
-    blackbox_cards = get_cards(rows_blackbox)
-    all_cards = huntress_cards + redbox_cards  # intentionally not including Black Box here
-
-    # Just for fun: uncomment the below line if you want to print the card names
-    print_card_names(all_cards, "Huntress and Red Box Card Names")
-
-    print(f"Number of cards in huntress box: {len(huntress_cards)}")
-    print(f"Number of cards in red box: {len(redbox_cards)}")
-    print(f"Total cards to sleave: {len(all_cards)}")
-
-    # This one I counted manually and it was correct so I think it's safe to assume the others are too.
-    print(f"BONUS Number of cards in black box: {len(blackbox_cards)}")
+    # from here you can decide where you want to send the report
+    print('\n'.join(report))
 
 def get_rows(url):
     """
-    Since this was repeating code, I figured I may as well make it a function.
+    Using the class name 'elementor-row' to pull out all the row elements. This gives us a nice list of tags
+    to later filter for only rows with card related things.
 
     Args:
         url (str): webpage to scrape
@@ -74,18 +78,16 @@ def get_cards(rows):
     """
     card_lists = get_card_lists(rows)
 
-    # card_count = 0
     card_names = []
     for card_list_data in card_lists.values():
-        # card_count += card_list_data["num"]
         for card in card_list_data["items"]:
             card_names.append(card.text.strip())
     return card_names
 
 def get_card_lists(rows):
     """
-    Loop through, filtering out rows that do not contain cards and then scrape
-    out the list items to itterate for a count.
+    Loop through, filtering out rows that do not contain cards and then scrape out the list items to itterate later. Lots of line comments
+    in this one becuase there were a lot of places where I felt it needed more explianation.
 
     Args:
         rows (tags): all of the tags found when making the initial Soup request
@@ -93,31 +95,24 @@ def get_card_lists(rows):
         Dictionary: filtered down rows and the found list items in them
     """
     all_list_items = {}
-    count = 1
+    count = 1  # Row number
+    # Add things to this list as you find them. Any text in this list will be used to filter out rows that do not have cards.
+    filter_list = [
+        "Keystones & Keeps"
+    ]
     for row in rows:
-        if  'Cards' in row.text and 'Keystones & Keeps' not in row.text:
-            list_items = row.find_all("li")
+        # The second half of this condition is using a generator to make sure we skip any rows where the text contains
+        # something from the filter list. It didn't feel clear when I wrote it so I thought I should explain.
+        if 'Cards' in row.text and not any(value in row.text for value in filter_list):
+            list_items = row.find_all("li")  # so far, just getting the <li> tags at this point seems to work
             if len(list_items) > 0:
+                # Yes, there were a few rows on initial testing that had 0 items, so lets ignore those
                 all_list_items[count] = {"num": len(list_items), "items": list_items, 'text': row.text}
-        # Why do this instead of simply creating a list of dictionaries? I want to remember which row it was for each one. It came in handy
-        # to get here and it may come in handy again if the page structure ever changes. It also makes for a nice unique key.
+                # Why do this instead of simply creating a list of cards here? Well, these extra bits of information come in handy for
+                # debugging when trying out a new page. If the numbers seem off, you can call this method alone and investigate what is
+                # getting through. Most likely you will need to add more things to the filter list.
         count += 1
     return all_list_items
-
-def get_longest_name(cards):
-    """
-    Nice a quick way to grab the longest card in the list for printing a formatted table.
-
-    Args:
-        cards (list): list of card names
-    Returns:
-        int: the length of the longest card in the list
-    """
-    longest = 0
-    for card in cards:
-        if len(card) > longest:
-            longest = len(card)
-    return longest
 
 def print_card_names(cards, title="Pretty printing the cards."):
     """
@@ -129,7 +124,7 @@ def print_card_names(cards, title="Pretty printing the cards."):
         title (str): a title at the top of the table
     """
     MAX_COLS = 3
-    justify = get_longest_name(cards)
+    justify = len(max(cards, key=len))
 
     # This is just for looks and based on the length of the longest name
     break_line = "-" * (justify + MAX_COLS) * MAX_COLS
