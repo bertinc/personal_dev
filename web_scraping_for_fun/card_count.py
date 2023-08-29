@@ -42,6 +42,7 @@ def count_cards(args):
     justify = 30
     count_padding = 4
     report = []  # Building a report so we can decide later out to produce output
+    names = []
     for name, url in urls.items():
         if args.pick and name != args.pick:
             continue
@@ -52,11 +53,12 @@ def count_cards(args):
         rows = get_rows(url)
         cards = get_cards(rows)
         all_cards += cards
+        names.append(name)
         report.append(f"Cards in {name} box: {str(len(cards)).rjust(count_padding)}".rjust(justify))
     report.append(f"Total Cards: {str(len(all_cards)).rjust(count_padding)}".rjust(justify))
 
-    # Uncomment this if you want to see the card names
-    # print_card_names(all_cards)
+    if args.print_card_names:
+        print_card_names(all_cards, f"Printing card names for {', '.join(names)}", args.print_card_names)
 
     # from here you can decide where you want to send the report
     print('\n'.join(report))
@@ -122,7 +124,7 @@ def get_card_lists(rows):
         count += 1
     return all_list_items
 
-def print_card_names(cards, title="Pretty printing the cards."):
+def print_card_names(cards, title="Pretty printing the cards.", cols=3):
     """
     For a sort of pretty print of all the cards? This will make it look like there are duplicates, but that's just because
     I did not care to save the categories. Some cards are actually for crossovers to other games in the Catacombs universe.
@@ -131,7 +133,7 @@ def print_card_names(cards, title="Pretty printing the cards."):
         cards (list): list of card names
         title (str): a title at the top of the table
     """
-    MAX_COLS = 3
+    MAX_COLS = cols
     justify = len(max(cards, key=len))
 
     # This is just for looks and based on the length of the longest name
@@ -190,6 +192,16 @@ def run():
         "--verbose",
         help="If you want to see the some extra information while processing.",
         action="store_true"
+    )
+    arg_parser.add_argument(
+        "--print_card_names",
+        type=int,
+        default=3,
+        choices=[1, 2, 3, 4, 5],
+        help=(
+            "If you want to see all of the requested card names in a table view. "
+            "You may also enter a custom number of columns. The default is 3."
+        )
     )
     arg_parser.set_defaults(func=count_cards)
     args = arg_parser.parse_args()
