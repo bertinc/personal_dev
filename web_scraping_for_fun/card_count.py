@@ -4,7 +4,7 @@ Created: 2023-08-28
 
 WHY: Trying to find the number of cards in the huntress pledge which includes the red box (and black box but I already sleaved it). I did
 some searching but as soon as I came accross the component list, I stopped looking and just decided to scrape it for what I needed. Honestly,
-I was having no luck finding any posts even on BGG to get this number and I wanted to make sure I purchased enough sleaves.
+I was having no luck finding any posts even on BGG to get this number and I wanted to make sure I purchased enough sleeves.
 
 HOW: For this I am using some html response scraping with BeautifulSoup. The path to the cards sections is not super clear at first when
 inspecting the pages. I decided to find all rows of a specific class and then filter out anything that doesn't have the word 'Cards'
@@ -15,16 +15,20 @@ TIPS: To test another page, use the get_card_lists function by itself to print t
 out what I needed to do differently in my logic between the pages.
 """
 import requests
+import argparse
 from bs4 import BeautifulSoup
 import logging
 
-def main():
+def count_cards(args):
     """
     Loop through a dictionary of urls to output the number of cards in each box set from the Huntress + Black Box pledge
     of Catacombs & Castles 2nd Edition Kickstarter campaign.
     """
     logging.basicConfig()
-    logging.getLogger().setLevel(logging.DEBUG)
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
+    elif args.verbose:
+        logging.getLogger().setLevel(logging.INFO)
     logger = logging.getLogger("card_count")
 
     # Add as many urls as you like here from the components list pages by Elzra
@@ -39,8 +43,12 @@ def main():
     count_padding = 4
     report = []  # Building a report so we can decide later out to produce output
     for name, url in urls.items():
+        if args.pick and name != args.pick:
+            continue
+        if args.skip_blackbox and name == "blackbox":
+            continue
         # put this in there so it looks less like it's doing nothing
-        logger.debug(f"Getting {name} cards")
+        logger.info(f"Getting {name} cards")
         rows = get_rows(url)
         cards = get_cards(rows)
         all_cards += cards
@@ -151,5 +159,41 @@ def print_card_names(cards, title="Pretty printing the cards."):
         print(row_text)
     print(break_line)
 
+def run():
+    arg_parser = argparse.ArgumentParser(
+        description="Count the cards so I know how many sleeves to buy.",
+        epilog="Hope it works!"
+    )
+    box_include = arg_parser.add_mutually_exclusive_group()
+    box_include.add_argument(
+        "-p",
+        "--pick",
+        type=str,
+        choices=["huntress", "redbox", "blackbox"],
+        help="Pick just one box to get the card count."
+    )
+    box_include.add_argument(
+        "-s",
+        "--skip_blackbox",
+        action="store_true",
+        help="If you want to skip the black box page."
+    )
+    verbosity = arg_parser.add_mutually_exclusive_group()
+    verbosity.add_argument(
+        "-d",
+        "--debug",
+        action="store_true",
+        help="If you want to see all of the extra debug info."
+    )
+    verbosity.add_argument(
+        "-v",
+        "--verbose",
+        help="If you want to see the some extra information while processing.",
+        action="store_true"
+    )
+    arg_parser.set_defaults(func=count_cards)
+    args = arg_parser.parse_args()
+    args.func(args)
+
 if __name__ == "__main__":
-    main()
+    run()
