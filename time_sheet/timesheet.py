@@ -2,14 +2,14 @@
 from datetime import datetime, timedelta
 import argparse
 import calendar
-import db
+from db import TimesheetDB
 import constants as const
 
 def manage_timesheet(args):
     """
     Stuff
     """
-    timesheet_db = db.Timesheet_DB()
+    timesheet_db = TimesheetDB()
     timesheet_db.init_db()
     response = None
     start = None
@@ -17,11 +17,12 @@ def manage_timesheet(args):
 
     # IMPORTING DATA
     if hasattr(args, 'file'):
-        entries, errors = import_entries(args)
+        entries, errors = import_entries(args, timesheet_db.categories)
         if errors:
             for error in errors:
                 print(error)
-        timesheet_db.insert_bulk_entries(entries)
+        if entries:
+            timesheet_db.insert_bulk_entries(entries)
     
     # REPORTING DATA
     elif hasattr(args, 'start'):
@@ -60,13 +61,13 @@ def manage_timesheet(args):
             for line in report:
                 print(line)
 
-def import_entries(args):
+def import_entries(args, categories):
     """
     Using an imput file, import, one line at a time, all new entries.
     Args:
         args: command line args
     """
-    timesheet_file = open(args.file)
+    timesheet_file = open(args.file, encoding='utf-8')
     lines = timesheet_file.readlines()
     date_str = ''
     new_entry = {}
@@ -90,7 +91,7 @@ def import_entries(args):
                 new_entry['values'] = tuple(vals_list)
             else:
                 response.append("ERROR: We have a DOC with no entry!")
-                return
+                return [], response
         # 3. If it's not a DOC or a date, then it's either a new entry, comment,
         #    or garbage. Prep for insert if it's an entry, otherwise, ignore it.
         else:
@@ -100,13 +101,16 @@ def import_entries(args):
                 continue
             if not date_str:
                 response.append("ERROR: No date string for this entry!")
-                return
+                return [], response
             if new_entry and not new_entry['added']:
                 # if a previous entry exists, append it to the list now
                 new_entry['added'] = True
                 entry_list.append(new_entry['values'])
+            # check if the category is valid
+            if entry_array[0] not in categories:
+                entry_array[0] = 'NONE'
             new_entry = {
-                'values': (date_str, entry_array[0], _convert_time(entry_array[1], False), entry_array[2], ''),
+                'values': (date_str, entry_array[0], entry_array[1], _convert_time(entry_array[2], False), entry_array[3], ''),
                 'added': False
             }
     if new_entry and not new_entry['added']:
@@ -118,6 +122,7 @@ def import_entries(args):
     with open(args.file, 'w', encoding='utf-8') as timesheet_file:
         timesheet_file.write(const.DT_STR)
         timesheet_file.write(const.ENTRY_STR)
+        timesheet_file.write(const.CATEGORIES.format(', '.join(categories)))
         timesheet_file.write(const.DOC_STR)
         timesheet_file.write(const.LAST_IMPORT.format(datetime.now().strftime(const.LAST_IMPORT_FORMAT)))
     return entry_list, response

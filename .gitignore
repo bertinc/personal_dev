@@ -17,3 +17,5 @@ Python.code-workspace
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
 hat_trick/__pycache__/
+time_sheet/input/timesheet_backup.txt
+time_sheet/timesheet_consulting_backup.db

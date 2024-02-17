@@ -1,36 +1,5 @@
 # Date - DT:mm-dd-yyyy
-# Any number of log entries after a Date - some desctiption;h:m{am/pm};h:m or just m
+# Any number of log entries after a Date - category;desctiption;h:m{am/pm};h:m or just m
+# Valid Categories: COLAB, DEV, FILM, IMAGING, IT, MISC, NONE, SETUP, WET
 # DOC: comes imediately after a log entry to link notes to an entry
-# Last import on 02-09-2024 at 08:40 AM
-DT:02-12-2024
-DEV;editing schema files raptor and wp tools database;6:00am;1:30
-COLAB;chatting with Elroy about R&D plans for the year;8:30am;45
-FILM;checking quality and talking to the team about reaching new lows in mold coating thickness;9:15am;1:00
-MISC;chatting with Liz and then working my way through onboarding documents;10:15am;2:00
-DEV;more work on database schema for raptor and wp tools;1:00pm;2:00
-FILM;planning cold swelling for production;3:00pm;45
-# 8
-DT:02-13-2024
-FILM;walking Ned through cold swelling process for a production film run;6:00am;3:30
-DOC: the engineering team asked me to do this as a test to compare the results to some streaks they keep getting
-MISC;more onboarding discussion with Liz;9:30am;1:00
-FILM;observe filtering, vacuuming, and spin coating results with Ned;10:30pm;3:30
-DEV;spending the rest of the day working from my home office on app and database development;2:00pm;1:30
-# 9.5
-DT:02-14-2024
-DEV;working from home on trex/raptor components and organizing the team;6:00am;8:00
-# 8
-DT:02-15-2024
-DEV;spent the morning in development and responding to some trex/raptor emails;6:30am;4:00
-FILM;ended up in an engineering/production meeting onsite that turned heavily toward film produciton;11:00am;1:30
-COLAB;some essential syncing with Elroy and Andrew over lunch;12:30pm;1:00
-DEV;demonstration from Louis on latest TREX UI, it is shaping up exactly as we planned;1:30pm;30
-MISC;some planning with Travis and Joel and a little administrative upkeep;2:00pm;30
-DEV;continued work on raptor database and some meeting planning;2:45pm;1:15
-# 8.75
-DT:02-16-2024
-COLAB;responding to emails and planning agenda for meeting with trex/raptor team;6:00am;2:30
-DEV;meeting with trex/raptor team and continued development on database and app;9:30am;3:00
-COLAB;preparation and meeting with Richard, week one checkin and expense discussion, after notes and responses;2:30pm;1:30
-DEV;creating invites for plans next week, reaching out to the Pearson boys to get a feel for development interests;4:30pm;1:30
-# 8.5
+# Last import on 02-17-2024 at 02:10 PM
