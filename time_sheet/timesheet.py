@@ -7,7 +7,7 @@ import constants as const
 
 def manage_timesheet(args):
     """
-    Stuff
+    Handle command line args and do what they say
     """
     timesheet_db = TimesheetDB()
     timesheet_db.init_db()
@@ -17,13 +17,13 @@ def manage_timesheet(args):
 
     # IMPORTING DATA
     if hasattr(args, 'file'):
-        entries, errors = import_entries(args, timesheet_db.categories)
+        entries, errors = import_entries(args, timesheet_db.valid_categories)
         if errors:
             for error in errors:
                 print(error)
         if entries:
             timesheet_db.insert_bulk_entries(entries)
-    
+
     # REPORTING DATA
     elif hasattr(args, 'start'):
         if args.start and args.end:
@@ -61,7 +61,7 @@ def manage_timesheet(args):
             for line in report:
                 print(line)
 
-def import_entries(args, categories):
+def import_entries(args, valid_categories):
     """
     Using an imput file, import, one line at a time, all new entries.
     Args:
@@ -107,7 +107,7 @@ def import_entries(args, categories):
                 new_entry['added'] = True
                 entry_list.append(new_entry['values'])
             # check if the category is valid
-            if entry_array[0] not in categories:
+            if entry_array[0] not in valid_categories:
                 entry_array[0] = 'NONE'
             new_entry = {
                 'values': (date_str, entry_array[0], entry_array[1], _convert_time(entry_array[2], False), entry_array[3], ''),
@@ -122,7 +122,7 @@ def import_entries(args, categories):
     with open(args.file, 'w', encoding='utf-8') as timesheet_file:
         timesheet_file.write(const.DT_STR)
         timesheet_file.write(const.ENTRY_STR)
-        timesheet_file.write(const.CATEGORIES.format(', '.join(categories)))
+        timesheet_file.write(const.CATEGORIES.format(', '.join(valid_categories)))
         timesheet_file.write(const.DOC_STR)
         timesheet_file.write(const.LAST_IMPORT.format(datetime.now().strftime(const.LAST_IMPORT_FORMAT)))
     return entry_list, response
@@ -215,29 +215,25 @@ def generate_report(start, end, data):
         data (list): data queried from the data base using start and end dates
     """
     total_minutes = 0
-    just_long = const.LONG_JUSTIFICATION
-    just_short = const.SHORT_JUSTIFICATION
     output_str = []
     # 1. Print the TITLE
     output_str.append(const.TIMESHEET_TITLE.format(const.BORDER, start, end, const.BORDER))
     # 2. Print the column names across the top
-    cols = const.REPORT_COLUMNS
     cols_str = ''
-    for col in cols:
+    for col in const.REPORT_COLUMNS:
         if col.upper() == 'DAY':
-            cols_str += col.ljust(just_long)
+            cols_str += col.ljust(const.LONG_JUSTIFICATION)
         elif col.upper() == 'DESCRIPTION':
             cols_str += col
         else:
-            cols_str += col.ljust(just_short)
+            cols_str += col.ljust(const.SHORT_JUSTIFICATION)
     output_str.append(cols_str)
     # 3. Print a line for each entry
     for entry in data:
-        day = entry[const.DAY_INDEX].ljust(just_long)
+        day = entry[const.DAY_INDEX].ljust(const.LONG_JUSTIFICATION)
         desc = entry[const.DESC_INDEX]
-        time = _convert_time(entry[const.TIME_INDEX]).ljust(just_short)
-        dur = entry[const.DUR_INDEX]
-        hours_mins = dur.split(const.TIME_DELIMITER)
+        time = _convert_time(entry[const.TIME_INDEX]).ljust(const.SHORT_JUSTIFICATION)
+        hours_mins = entry[const.DUR_INDEX].split(const.TIME_DELIMITER)
         curr_min = 0
         if len(hours_mins) == 2:
             # If the split gives us two things then it's in hours and minutes
@@ -248,7 +244,7 @@ def generate_report(start, end, data):
             curr_min = int(hours_mins[0])
             total_minutes += curr_min
         curr_hours = curr_min / const.MINUTES_PER_HOUR
-        hours = str(f'{curr_hours:.2f}').ljust(just_short) # make sure hours is only 2 decimal places
+        hours = str(f'{curr_hours:.2f}').ljust(const.SHORT_JUSTIFICATION) # make sure hours is only 2 decimal places
         output_str.append(f'{day}{time}{hours}{desc}')
     #4. Print the sumary
     hours = total_minutes / const.MINUTES_PER_HOUR
@@ -256,6 +252,8 @@ def generate_report(start, end, data):
     return output_str
 
 def report_hours_with_pay(start, end, data):
+    # pylint: disable=R0914
+    # I'm okay with too many variables on this one
     """
     A more informative set of calculations based on the accumulated hours across
     a date range.
@@ -290,9 +288,8 @@ def report_hours_with_pay(start, end, data):
             total_minutes += curr_min
     hours = total_minutes / const.MINUTES_PER_HOUR
     gross_pay = hours * const.RATE
-    hsa_cont = const.HSA_CONTRIBUTION
-    if True:
-        before_tax_cont = hsa_cont
+    if const.HSA_CONTRIBUTION:
+        before_tax_cont = const.HSA_CONTRIBUTION
     else:
         before_tax_cont = 0
     pay_minus_btc = gross_pay - before_tax_cont
@@ -302,7 +299,7 @@ def report_hours_with_pay(start, end, data):
         hrs_per_day = hours / day_count
     else:
         hrs_per_day = 0
-    
+
     output_str.append(f'{"Days Worked: ":>17}{day_count}')
     output_str.append(f'{"Hrs per day: ":>17}{hrs_per_day:.2f}')
     output_str.append(f'{"Total hours: ":>17}{hours:,.2f}')
@@ -339,7 +336,7 @@ def _convert_time(time, to_twelve_hour=True):
                 hours_str = str(hours - 12)
         if hours == 0:
             hours_str = '12'
-        return f'{hours_str}:{mins_str} {am_pm}'
+        converted_time = f'{hours_str}:{mins_str} {am_pm}'
     else:
         # need to return military time version
         hours_mins = time[:-2].split(':')
@@ -353,7 +350,8 @@ def _convert_time(time, to_twelve_hour=True):
             hours_str = '00'
         if am_pm.lower() == 'pm' and hours < 12:
             hours_str = str(hours + 12)
-        return f'{hours_str}:{mins_str}'
+        converted_time = f'{hours_str}:{mins_str}'
+    return converted_time
 
 def run():
     """

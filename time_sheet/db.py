@@ -13,6 +13,7 @@ class TimesheetDB:
         self.sql_file = os.sep.join([self.file_path, 'init_timesheet_db.sql'])
         self.conn = None
         self.categories = []
+        self.valid_categories = []
 
     def close_connection(self):
         """
@@ -38,9 +39,9 @@ class TimesheetDB:
             cur = self.conn.cursor()
 
             # init db via script
-            sql_script = open(self.sql_file)
-            sql_as_string = sql_script.read()
-            cur.executescript(sql_as_string)
+            with open(self.sql_file, encoding='utf-8') as sql_script:
+                sql_as_string = sql_script.read()
+                cur.executescript(sql_as_string)
             self.conn.commit()
 
         except sqlite3.Error as e:
@@ -63,7 +64,7 @@ class TimesheetDB:
             print(e)
         finally:
             self.close_connection()
-    
+
     def set_categories(self):
         """
         Sets the categories member variable based on what is in the DB on init
@@ -72,15 +73,17 @@ class TimesheetDB:
             self.conn = sqlite3.connect(self.db_file)
             cur = self.conn.cursor()
 
-            query_str = 'SELECT category FROM rt_category'
+            query_str = 'SELECT * FROM rt_category'
             cur.execute(query_str)
             response = cur.fetchall()
 
-            # clean up response as single list
+            self.categories = response
+
+            # clean up response as single list for valid categories
             valid_categories = []
             for entry in response:
                 valid_categories.append(entry[0])
-            self.categories = valid_categories
+            self.valid_categories = valid_categories
 
         except sqlite3.Error as e:
             print(e)

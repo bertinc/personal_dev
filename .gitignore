@@ -19,3 +19,4 @@ Python.code-workspace
 hat_trick/__pycache__/
 time_sheet/input/timesheet_backup.txt
 time_sheet/timesheet_consulting_backup.db
+time_sheet/report_final_consulting.txt
