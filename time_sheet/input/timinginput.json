@@ -1,0 +1,18 @@
+{
+    "name": "Chase Pyrah",
+    "session_start": "2:50pm",
+    "session_end": "7:45pm",
+    "forumla": "48-240-2200-8",
+    "plates_coated": 11,
+    "plates_cleaned": 11,
+    "notes": "This one took a little longer than usual.",
+    "cols": ["room_code","equipment","start","stop","setup"],
+    "timings": [
+        ["gmr","mixing hood","4:28pm","5:38pm",""],
+        ["gmr","vacuum oven","5:46pm","6:25pm","4:32pm"],
+        ["gmr","filter pump","5:46pm","5:59pm","5:34pm"],
+        ["fcr","glass cleaning sinks","2:54pm","4:25pm","2:48pm"],
+        ["fcr","coating hood","6:25pm","7:30pm","6:15pm"],
+        ["fcr","glass warming oven","6:10pm","7:30pm",""]
+    ]
+}

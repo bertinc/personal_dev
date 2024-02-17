@@ -3,14 +3,14 @@ import sqlite3
 import os
 import constants as const
 
-class DB:
+class Timesheet_DB:
     """
     Does all the needed database interactions.
     """
     def __init__(self) -> None:
         self.file_path = const.PATH
         self.db_file = os.sep.join([self.file_path, 'timesheet.db'])
-        self.sql_file = os.sep.join([self.file_path, 'init_db.sql'])
+        self.sql_file = os.sep.join([self.file_path, 'init_timesheet_db.sql'])
         self.conn = None
 
     def close_connection(self):

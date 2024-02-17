@@ -9,10 +9,11 @@ class DB:
     def __init__(self) -> None:
         self.file_path = const.PATH
         self.db_file = os.sep.join([self.file_path, 'households.db'])
-        self.sql_file = os.sep.join([self.file_path, 'init_db.sql'])
+        self.db_schema_init_file = os.sep.join([self.file_path, 'init_db.sql'])
+        self.init_households_file = os.sep.join([self.file_path, 'init_households.sql'])
         self.conn = None
         self.exludes = {}
-    
+
     def get_excludes(self, name = ''):
         """
         If any excludes were set on the database for this name, they are returned
@@ -30,9 +31,8 @@ class DB:
             return ['ALL EXCLUDES', len(self.exludes), self.exludes]
         if name in self.exludes.keys():
             return self.exludes[name]
-        else:
-            return []
-    
+        return []
+
     def add_exclude(self, name, excludes):
         """
         If you need to add an exclude programatically instead of editing the database
@@ -62,12 +62,17 @@ class DB:
             self.conn = sqlite3.connect(self.db_file)
             cur = self.conn.cursor()
 
-            sql_script = open(self.sql_file)
-            sql_as_string = sql_script.read()
-            cur.executescript(sql_as_string)
-            self.conn.commit()
-        except sqlite3.Error as e:
-            print(e)
+            with open(self.db_schema_init_file, encoding='utf-8') as sql_script:
+                sql_as_string = sql_script.read()
+                cur.executescript(sql_as_string)
+                self.conn.commit()
+
+            with open(self.init_households_file, encoding='utf-8') as sql_script:
+                sql_as_string = sql_script.read()
+                cur.executescript(sql_as_string)
+                self.conn.commit()
+        except sqlite3.Error as exception:
+            print(exception)
         finally:
             self.close_connection()
 
@@ -82,9 +87,9 @@ class DB:
             List: All rows in people table ordered by the optional arg 
         """
         if order_by:
-            query = f"SELECT * FROM people WHERE ignore = 0 ORDER BY {order_by}"
+            query = f"SELECT * FROM people WHERE pass = 0 ORDER BY {order_by}"
         else:
-            query = f"SELECT * FROM people WHERE ignore = 0"
+            query = "SELECT * FROM people WHERE pass = 0"
         response = []
 
         try:
@@ -92,12 +97,12 @@ class DB:
             cur = self.conn.cursor()
             cur.execute(query)
             response = cur.fetchall()
-        except sqlite3.Error as e:
-            print(e)
+        except sqlite3.Error as exception:
+            print(exception)
         finally:
             self.close_connection()
         return response
-    
+
     def get_households_with_names(self, age = '', gender = ''):
         """
         Get the names grouped by household. We can also request a specific gender or age category
@@ -111,7 +116,7 @@ class DB:
             Dictionary: the keys are the households and the values are a list of names in each household
         """
         # build WHERE clause
-        where = 'WHERE ignore = 0'
+        where = 'WHERE pass = 0'
         if age:
             if age == 'adults':
                 stage = 1
@@ -120,7 +125,7 @@ class DB:
             where += f' AND adult = {stage}'
         if gender:
             where += f' AND gender = \'{gender}\''
-        query = f"SELECT first, exclude, household_id FROM people {where} ORDER BY RANDOM()"
+        query = f"SELECT firstname, excludes, household_id FROM people {where} ORDER BY RANDOM()"
         response = {}
         try:
             self.conn = sqlite3.connect(self.db_file)
@@ -133,8 +138,8 @@ class DB:
                 if row[const.EXCLUDE]:
                     self.exludes[row[const.FIRSTNAME]] = row[const.EXCLUDE].split('|')
                 response[row[const.HOUSEHOLD_ID]].append(row[const.FIRSTNAME])
-        except sqlite3.Error as e:
-            print(e)
+        except sqlite3.Error as exception:
+            print(exception)
         finally:
             self.close_connection()
         return response
@@ -147,7 +152,7 @@ class DB:
             List: all unique household ids
         """
         # build where clause
-        where = 'WHERE ignore = 0'
+        where = 'WHERE pass = 0'
         query = f"SELECT DISTINCT household_id FROM people {where}"
         response = []
         try:
@@ -155,8 +160,8 @@ class DB:
             cur = self.conn.cursor()
             for row in cur.execute(query):
                 response.append(row[0])
-        except sqlite3.Error as e:
-            print(e)
+        except sqlite3.Error as exception:
+            print(exception)
         finally:
             self.close_connection()
         return response

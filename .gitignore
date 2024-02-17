@@ -1,14 +1,10 @@
 hat_trick/households.db
 hat_trick/names.txt
-hat_trick/__pycache__/constants.cpython-310.pyc
-hat_trick/__pycache__/db.cpython-310.pyc
 time_sheet/timesheet.db
 enc_dec_tool/dec.txt
 enc_dec_tool/enc.txt
-enc_dec_tool/__pycache__/constants.cpython-310.pyc
-enc_dec_tool/__pycache__/constants.cpython-311.pyc
-time_sheet/__pycache__/constants.cpython-311.pyc
-time_sheet/__pycache__/db.cpython-311.pyc
+enc_dec_tool/__pycache__/
+time_sheet/__pycache__/
 time_sheet/Timesheet_Report_Current.lnk
 time_sheet/Timesheet_Report_By_Month.lnk
 time_sheet/Timesheet_Report_All.lnk
@@ -20,3 +16,4 @@ time_sheet/Timesheet_Import.lnk
 Python.code-workspace
 .vs/slnx.sqlite
 .vs/VSWorkspaceState.json
+hat_trick/__pycache__/

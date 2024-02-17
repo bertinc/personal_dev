@@ -1,9 +1,18 @@
+"""
+Auther: Robert Rallison
+Description: This tool is simply to simulate pulling names from a hat
+for a gift exchange.
+"""
+import sys
 import random
 from db import DB
 import constants as const
-import sys
+
 
 def main(argv):
+    """
+    Run this sucker
+    """
     print(const.TITLE)
     db = DB()
     db.init_new_db()

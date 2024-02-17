@@ -6,7 +6,10 @@ import db
 import constants as const
 
 def manage_timesheet(args):
-    timesheet_db = db.DB()
+    """
+    Stuff
+    """
+    timesheet_db = db.Timesheet_DB()
     timesheet_db.init_db()
     response = None
     start = None
@@ -44,7 +47,7 @@ def manage_timesheet(args):
             # because somethings you just want to see some extra numbers
             pay = report_hours_with_pay(start, end, response)
             report = report + pay
-        
+
         if args.fileout:
             # send to output file
             report_filename = f'{const.PATH}\\report.txt'
@@ -282,8 +285,14 @@ def report_hours_with_pay(start, end, data):
             total_minutes += curr_min
     hours = total_minutes / const.MINUTES_PER_HOUR
     gross_pay = hours * const.RATE
-    taxes = gross_pay * const.TAX_RATE
-    net_pay = gross_pay - taxes
+    hsa_cont = const.HSA_CONTRIBUTION
+    if True:
+        before_tax_cont = hsa_cont
+    else:
+        before_tax_cont = 0
+    pay_minus_btc = gross_pay - before_tax_cont
+    taxes = pay_minus_btc * const.TAX_RATE
+    net_pay = pay_minus_btc - taxes
     if day_count > 0:
         hrs_per_day = hours / day_count
     else:
@@ -294,6 +303,7 @@ def report_hours_with_pay(start, end, data):
     output_str.append(f'{"Total hours: ":>17}{hours:,.2f}')
     output_str.append(f'{"Tax Rate: ":>17}{const.TAX_RATE:.1%}')
     output_str.append(f'{"Gross Pay: $":>18}{gross_pay:,.2f}')
+    output_str.append(f'{"Before Tax Cont: $":>18}{before_tax_cont:,.2f}')
     output_str.append(f'{"Net Pay: $":>18}{net_pay:,.2f}')
     output_str.append(f'{"Save for taxes: $":>18}{taxes:,.2f}\n')
 
@@ -358,14 +368,14 @@ def run():
 
     # Generate reports
     arg_report_timesheet = subs.add_parser('report', help='Generate a timesheet report for management.')
-    arg_report_timesheet.add_argument('--all', '--a', action='store_true', help='Report on the entire stored timesheet database.')
-    arg_report_timesheet.add_argument('--fileout', '--f', action='store_true', help='Turn this on if you want the output sent to report.txt')
-    arg_report_timesheet.add_argument('--current', '--c', action='store_true', help='Report based on current pay period.')
-    arg_report_timesheet.add_argument('--pay', '--p', action='store_true', help='Report hours with expected pay.')
-    arg_report_timesheet.add_argument('-start', '-s', help='Start date.')
-    arg_report_timesheet.add_argument('-end', '-e', help='End date')
-    arg_report_timesheet.add_argument('-month', '-m', type=int, help='To request a specific month in the current year.')
-    arg_report_timesheet.add_argument('-year', '-y', type=int, help='Optional if you want to specify a year with the month.')
+    arg_report_timesheet.add_argument('--all', '-a', action='store_true', help='Report on the entire stored timesheet database.')
+    arg_report_timesheet.add_argument('--fileout', '-f', action='store_true', help='Turn this on if you want the output sent to report.txt')
+    arg_report_timesheet.add_argument('--current', '-c', action='store_true', help='Report based on current pay period.')
+    arg_report_timesheet.add_argument('--pay', '-p', action='store_true', help='Report hours with expected pay.')
+    arg_report_timesheet.add_argument('--start', '-s', help='Start date.')
+    arg_report_timesheet.add_argument('--end', '-e', help='End date')
+    arg_report_timesheet.add_argument('--month', '-m', type=int, help='To request a specific month in the current year.')
+    arg_report_timesheet.add_argument('--year', '-y', type=int, help='Optional if you want to specify a year with the month.')
 
     args = parser.parse_args()
     manage_timesheet(args)
