@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 import argparse
 import calendar
 from db import TimesheetDB
-import constants as const
+import constants as Const
+
 
 def manage_timesheet(args):
     """
@@ -23,6 +24,7 @@ def manage_timesheet(args):
                 print(error)
         if entries:
             timesheet_db.insert_bulk_entries(entries)
+        print(f'Imported {len(entries)} entries.')
 
     # REPORTING DATA
     elif hasattr(args, 'start'):
@@ -42,16 +44,16 @@ def manage_timesheet(args):
             # report for a chosen month
             start, end = _get_month_start_end(args.month, args.year)
             response = timesheet_db.get_report_between(start, end)
-        report = generate_report(start, end, response)
+        report, hours_by_day = generate_activity_report(start, end, response)
 
         if args.pay:
             # because somethings you just want to see some extra numbers
-            pay = report_hours_with_pay(start, end, response)
+            pay = generate_pay_report(start, end, hours_by_day)
             report = report + pay
 
         if args.fileout:
             # send to output file
-            report_filename = f'{const.PATH}\\report.txt'
+            report_filename = f'{Const.PATH}\\report.txt'
             with open(report_filename, 'w', encoding='utf-8') as report_file:
                 for line in report:
                     report_file.write(line + '\n')
@@ -60,6 +62,24 @@ def manage_timesheet(args):
             # or just print it to the console
             for line in report:
                 print(line)
+    # print(json.dumps(hours_by_day))
+    
+def get_current_report():
+    timesheet_db = TimesheetDB()
+    timesheet_db.init_db()
+    response = None
+    start = None
+    end = None
+    start, end = _get_current_start_end()
+    response = timesheet_db.get_report_between(start, end)
+    report, hours_by_day = generate_activity_report(start, end, response)
+    # print(hours_by_day)
+    report_filename = f'{Const.PATH}\\report.txt'
+    with open(report_filename, 'w', encoding='utf-8') as report_file:
+        for line in report:
+            report_file.write(line + '\n')
+        print(f'Output sent to {report_filename}')
+    # return "Got current report"
 
 def import_entries(args, valid_categories):
     """
@@ -67,7 +87,8 @@ def import_entries(args, valid_categories):
     Args:
         args: command line args
     """
-    timesheet_file = open(args.file, encoding='utf-8')
+    ts_file_path = f'{Const.PATH}\\input\\timesheet.txt'
+    timesheet_file = open(ts_file_path, encoding='utf-8')
     lines = timesheet_file.readlines()
     date_str = ''
     new_entry = {}
@@ -95,8 +116,8 @@ def import_entries(args, valid_categories):
         # 3. If it's not a DOC or a date, then it's either a new entry, comment,
         #    or garbage. Prep for insert if it's an entry, otherwise, ignore it.
         else:
-            entry_array = clean_line.split(const.ENTRY_DELIMITER)
-            if len(entry_array) != const.ENTRY_LENGTH or clean_line.startswith('#'):
+            entry_array = clean_line.split(Const.ENTRY_DELIMITER)
+            if len(entry_array) != Const.ENTRY_LENGTH or clean_line.startswith('#'):
                 # this is a comment or garbage
                 continue
             if not date_str:
@@ -110,7 +131,7 @@ def import_entries(args, valid_categories):
             if entry_array[0] not in valid_categories:
                 entry_array[0] = 'NONE'
             new_entry = {
-                'values': (date_str, entry_array[0], entry_array[1], _convert_time(entry_array[2], False), entry_array[3], ''),
+                'values': (date_str, entry_array[0], entry_array[1], _convert_time(entry_array[2], False), _to_minutes(entry_array[3]), ''),
                 'added': False
             }
     if new_entry and not new_entry['added']:
@@ -119,12 +140,12 @@ def import_entries(args, valid_categories):
     timesheet_file.close()
 
     # now clear the timesheet and add a timestamp for the last time it was imported
-    with open(args.file, 'w', encoding='utf-8') as timesheet_file:
-        timesheet_file.write(const.DT_STR)
-        timesheet_file.write(const.ENTRY_STR)
-        timesheet_file.write(const.CATEGORIES.format(', '.join(valid_categories)))
-        timesheet_file.write(const.DOC_STR)
-        timesheet_file.write(const.LAST_IMPORT.format(datetime.now().strftime(const.LAST_IMPORT_FORMAT)))
+    with open(ts_file_path, 'w', encoding='utf-8') as timesheet_file:
+        timesheet_file.write(Const.DT_STR)
+        timesheet_file.write(Const.ENTRY_STR)
+        timesheet_file.write(Const.CATEGORIES.format(', '.join(valid_categories)))
+        timesheet_file.write(Const.DOC_STR)
+        timesheet_file.write(Const.LAST_IMPORT.format(datetime.now().strftime(Const.LAST_IMPORT_FORMAT)))
     return entry_list, response
 
 def _format_date(date_string):
@@ -202,9 +223,9 @@ def _get_month_start_end(month, year=None):
     first_last = calendar.monthrange(year, month)
     first = datetime(year, month, 1)
     last = datetime(year, month, first_last[1])
-    return first.strftime(const.DATE_FORMAT), last.strftime(const.DATE_FORMAT)
+    return first.strftime(Const.DATE_FORMAT), last.strftime(Const.DATE_FORMAT)
 
-def generate_report(start, end, data):
+def generate_activity_report(start, end, data):
     """
     Here we are just trying to generate a human readable report of whatever timesheet
     data was queried.
@@ -217,41 +238,37 @@ def generate_report(start, end, data):
     total_minutes = 0
     output_str = []
     # 1. Print the TITLE
-    output_str.append(const.TIMESHEET_TITLE.format(const.BORDER, start, end, const.BORDER))
+    output_str.append(Const.TIMESHEET_TITLE.format(Const.BORDER, start, end, Const.BORDER))
     # 2. Print the column names across the top
     cols_str = ''
-    for col in const.REPORT_COLUMNS:
+    for col in Const.REPORT_COLUMNS:
         if col.upper() == 'DAY':
-            cols_str += col.ljust(const.LONG_JUSTIFICATION)
+            cols_str += col.ljust(Const.LONG_JUSTIFICATION)
         elif col.upper() == 'DESCRIPTION':
             cols_str += col
         else:
-            cols_str += col.ljust(const.SHORT_JUSTIFICATION)
+            cols_str += col.ljust(Const.SHORT_JUSTIFICATION)
     output_str.append(cols_str)
     # 3. Print a line for each entry
+    hours_by_day = {}
     for entry in data:
-        day = entry[const.DAY_INDEX].ljust(const.LONG_JUSTIFICATION)
-        desc = entry[const.DESC_INDEX]
-        time = _convert_time(entry[const.TIME_INDEX]).ljust(const.SHORT_JUSTIFICATION)
-        hours_mins = entry[const.DUR_INDEX].split(const.TIME_DELIMITER)
-        curr_min = 0
-        if len(hours_mins) == 2:
-            # If the split gives us two things then it's in hours and minutes
-            curr_min = ((int(hours_mins[0]) * const.MINUTES_PER_HOUR) + int(hours_mins[1]))
-            total_minutes += curr_min
-        else:
-            # If there is only one value then it will be minutes
-            curr_min = int(hours_mins[0])
-            total_minutes += curr_min
-        curr_hours = curr_min / const.MINUTES_PER_HOUR
-        hours = str(f'{curr_hours:.2f}').ljust(const.SHORT_JUSTIFICATION) # make sure hours is only 2 decimal places
+        day = entry[Const.DAY_INDEX].ljust(Const.LONG_JUSTIFICATION)
+        desc = entry[Const.DESC_INDEX]
+        time = _convert_time(entry[Const.TIME_INDEX]).ljust(Const.SHORT_JUSTIFICATION)
+        total_minutes += entry[Const.DUR_INDEX]
+        curr_hours = entry[Const.DUR_INDEX] / Const.MINUTES_PER_HOUR
+        hours = str(f'{curr_hours:.2f}').ljust(Const.SHORT_JUSTIFICATION) # make sure hours is only 2 decimal places
         output_str.append(f'{day}{time}{hours}{desc}')
+        if entry[Const.DAY_INDEX] not in hours_by_day:
+            hours_by_day[entry[Const.DAY_INDEX]] = curr_hours
+        else:
+            hours_by_day[entry[Const.DAY_INDEX]] += curr_hours
     #4. Print the sumary
-    hours = total_minutes / const.MINUTES_PER_HOUR
+    hours = total_minutes / Const.MINUTES_PER_HOUR
     output_str.append(f'\nTotal hours: {hours:.2f}\n')
-    return output_str
+    return output_str, hours_by_day
 
-def report_hours_with_pay(start, end, data):
+def generate_pay_report(start, end, hours_by_day):
     # pylint: disable=R0914
     # I'm okay with too many variables on this one
     """
@@ -261,39 +278,19 @@ def report_hours_with_pay(start, end, data):
     Args:
         start (str): start date in year-month-day format
         end (str): end date in year-month-day format
-        data (list): the data queried from the database
+        hours_by_day (dict): sum of hours by day
     """
-    total_minutes = 0
     output_str = []
-    output_str.append(const.PAY_TITLE.format(const.BORDER, start, end, const.BORDER))
-    prev_date = None
-    day_count = 0
-    for entry in data:
-        dur = entry[const.DUR_INDEX]
-        hours_mins = dur.split(const.TIME_DELIMITER)
-        curr_date = entry[const.DAY_INDEX]
-        if not prev_date:
-            prev_date = curr_date
-            day_count += 1
-        elif prev_date and curr_date != prev_date:
-            day_count += 1
-        prev_date = curr_date
-        if len(hours_mins) == 2:
-            # If the split gives us two things then it's in hours and minutes
-            curr_min = ((int(hours_mins[0]) * const.MINUTES_PER_HOUR) + int(hours_mins[1]))
-            total_minutes += curr_min
-        else:
-            # If there is only one value then it will be minutes
-            curr_min = int(hours_mins[0])
-            total_minutes += curr_min
-    hours = total_minutes / const.MINUTES_PER_HOUR
-    gross_pay = hours * const.RATE
-    if const.HSA_CONTRIBUTION:
-        before_tax_cont = const.HSA_CONTRIBUTION
+    output_str.append(Const.PAY_TITLE.format(Const.BORDER, start, end, Const.BORDER))
+    day_count = len(hours_by_day)
+    hours = sum(hours_by_day.values())
+    gross_pay = hours * Const.RATE
+    if Const.HSA_CONTRIBUTION:
+        before_tax_cont = Const.HSA_CONTRIBUTION
     else:
         before_tax_cont = 0
     pay_minus_btc = gross_pay - before_tax_cont
-    taxes = pay_minus_btc * const.TAX_RATE
+    taxes = pay_minus_btc * Const.TAX_RATE
     net_pay = pay_minus_btc - taxes
     if day_count > 0:
         hrs_per_day = hours / day_count
@@ -303,13 +300,30 @@ def report_hours_with_pay(start, end, data):
     output_str.append(f'{"Days Worked: ":>17}{day_count}')
     output_str.append(f'{"Hrs per day: ":>17}{hrs_per_day:.2f}')
     output_str.append(f'{"Total hours: ":>17}{hours:,.2f}')
-    output_str.append(f'{"Tax Rate: ":>17}{const.TAX_RATE:.1%}')
+    output_str.append(f'{"Tax Rate: ":>17}{Const.TAX_RATE:.1%}')
     output_str.append(f'{"Gross Pay: $":>18}{gross_pay:,.2f}')
     output_str.append(f'{"Before Tax Cont: $":>18}{before_tax_cont:,.2f}')
     output_str.append(f'{"Net Pay: $":>18}{net_pay:,.2f}')
     output_str.append(f'{"Save for taxes: $":>18}{taxes:,.2f}\n')
 
     return output_str
+
+converted_minutes = 0
+def _to_minutes(duration):
+    """
+    Converts an hours:minutes input into just minutes. I could enter it as traight minutes
+    but it feels easier to do it in hours and minutes on the fly.    
+    """
+    hours_minutes = duration.split(Const.TIME_DELIMITER)
+    if len(hours_minutes) == 2:
+        # If the split gives us two things then it's in hours and minutes
+        curr_min = ((int(hours_minutes[0]) * Const.MINUTES_PER_HOUR) + int(hours_minutes[1]))
+    else:
+        # If there is only one value then it will be minutes
+        curr_min = int(hours_minutes[0])
+    global converted_minutes
+    converted_minutes = curr_min
+    return curr_min
 
 def _convert_time(time, to_twelve_hour=True):
     """
@@ -361,7 +375,7 @@ def run():
     desc = "Timesheet importer tool."
     final_note = "Don't forget to clear your times sheet after each use!"
     parser = argparse.ArgumentParser(description=desc, epilog=final_note)
-    timesheet_file = f'{const.PATH}\\input\\timesheet.txt'
+    timesheet_file = f'{Const.PATH}\\input\\timesheet.txt'
 
     subs = parser.add_subparsers(title='commands')
 
@@ -383,6 +397,8 @@ def run():
     args = parser.parse_args()
     manage_timesheet(args)
 
-if __name__ == "__main__":
+if __name__ == "__main__" or __name__ == "<module>" or __name__ == "time_sheet.timesheet":
     run()
+else:
+    print(f'No match for __name__ as {__name__}')
     

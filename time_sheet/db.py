@@ -73,7 +73,7 @@ class TimesheetDB:
             self.conn = sqlite3.connect(self.db_file)
             cur = self.conn.cursor()
 
-            query_str = 'SELECT * FROM rt_category'
+            query_str = 'SELECT category, description FROM rt_category'
             cur.execute(query_str)
             response = cur.fetchall()
 
@@ -116,6 +116,22 @@ class TimesheetDB:
             self.conn = sqlite3.connect(self.db_file)
             cur = self.conn.cursor()
             query_str = 'SELECT * FROM dt_entry ORDER BY date ASC, start ASC'
+            cur.execute(query_str)
+            response = cur.fetchall()
+        except sqlite3.Error as e:
+            print(e)
+        finally:
+            self.close_connection()
+        return response
+
+    def get_hours_by_category(self, start, end):
+        """
+        Sum hours by category accross date range
+        """
+        try:
+            self.conn = sqlite3.connect(self.db_file)
+            cur = self.conn.cursor()
+            query_str = f'SELECT SUM(duration) as hours, category FROM dt_entry WHERE date BETWEEN \'{start}\' AND \'{end}\' GROUP BY category'
             cur.execute(query_str)
             response = cur.fetchall()
         except sqlite3.Error as e:

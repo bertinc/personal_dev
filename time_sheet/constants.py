@@ -12,12 +12,12 @@ REPORT_COLUMNS = ['DAY', 'TIME', 'HOURS', 'DESCRIPTION']
 PATH = os.path.dirname(os.path.realpath(__file__))
 DATE_MARKER = 'DT:' # Marks a line as the start of a new day
 DATE_LENGTH = 3 # Date must always have three values or we have a problem
-RATE = 70
+RATE = 140000/52/40
 TAX_RATE = 0.18
 DAY_INDEX = 0
 DESC_INDEX = 1
 TIME_INDEX = 2
-DUR_INDEX = -2
+DUR_INDEX = -3
 ENTRY_DELIMITER = ';'
 TIME_DELIMITER = ':'
 DATE_DELIMITER = '-'
@@ -28,7 +28,7 @@ LONG_JUSTIFICATION = 13
 SHORT_JUSTIFICATION = 10
 PAY_JUSTIFICATION = 18
 MINUTES_PER_HOUR = 60
-HSA_CONTRIBUTION = 5000/12
+HSA_CONTRIBUTION = 0 # 5000/12
 
 # This is the default stuff we put at the top of the timesheet file after import
 DT_STR = '# Date - DT:mm-dd-yyyy\n'
