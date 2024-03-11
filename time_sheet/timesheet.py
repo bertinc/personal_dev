@@ -25,6 +25,24 @@ def manage_timesheet(args):
         if entries:
             timesheet_db.insert_bulk_entries(entries)
         print(f'Imported {len(entries)} entries.')
+        
+    # GROUP BY DATA
+    elif hasattr(args, "cat"):
+        if args.start and args.end:
+            # a specific start and end was provided
+            start, end = args.start, args.end
+            if args.day:
+                response = timesheet_db.get_hours_by_day(_format_date(start), _format_date(end))
+            elif args.cat:
+                response = timesheet_db.get_hours_by_category(_format_date(start), _format_date(end))
+                
+            report = generate_group_by_report(start, end, response)
+            
+            report_filename = f'{Const.PATH}\\report.txt'
+            with open(report_filename, 'w', encoding='utf-8') as report_file:
+                for line in report:
+                    report_file.write(line + '\n')
+                print(f'Output sent to {report_filename}')
 
     # REPORTING DATA
     elif hasattr(args, 'start'):
@@ -225,6 +243,17 @@ def _get_month_start_end(month, year=None):
     last = datetime(year, month, first_last[1])
     return first.strftime(Const.DATE_FORMAT), last.strftime(Const.DATE_FORMAT)
 
+def generate_group_by_report(start, end, data):
+    output_str = []
+    total_hours = 0.0
+    for entry in data:
+        day_or_cat = entry[0].ljust(Const.LONG_JUSTIFICATION)
+        hours = str(entry[1]).ljust(Const.SHORT_JUSTIFICATION)
+        total_hours += entry[1]
+        output_str.append(f'{day_or_cat}{hours}')
+    output_str.append(f'\nTotal hours: {total_hours:.2f}\n')
+    return output_str
+
 def generate_activity_report(start, end, data):
     """
     Here we are just trying to generate a human readable report of whatever timesheet
@@ -393,6 +422,13 @@ def run():
     arg_report_timesheet.add_argument('--end', '-e', help='End date')
     arg_report_timesheet.add_argument('--month', '-m', type=int, help='To request a specific month in the current year.')
     arg_report_timesheet.add_argument('--year', '-y', type=int, help='Optional if you want to specify a year with the month.')
+    
+    # Report grouped by something
+    arg_report_by = subs.add_parser('reportby', help='Generate a report grouped by day or category.')
+    arg_report_by.add_argument('--start', '-s', help='Start date.')
+    arg_report_by.add_argument('--end', '-e', help='End date')
+    arg_report_by.add_argument('--day', action='store_true', help='Report hours grouped by day.')
+    arg_report_by.add_argument('--cat', action='store_true', help='Report hours grouped by category.')
 
     args = parser.parse_args()
     manage_timesheet(args)
