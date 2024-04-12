@@ -1,5 +1,5 @@
 # Date - DT:mm-dd-yyyy
 # Any number of log entries after a Date - category;desctiption;h:m{am/pm};h:m or just m
-# Valid Categories: COLAB, DEV, FILM, IMAGING, IT, MISC, NONE, SETUP, WET
+# Valid Categories: DEV, FILM, IMAGING, IT, WET, SETUP, MISC, COLAB, NONE, PTO
 # DOC: comes imediately after a log entry to link notes to an entry
-# Last import on 02-17-2024 at 02:10 PM
+# Last import on 04-12-2024 at 02:01 PM

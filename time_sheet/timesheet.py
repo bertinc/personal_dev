@@ -425,8 +425,8 @@ def run():
     
     # Report grouped by something
     arg_report_by = subs.add_parser('reportby', help='Generate a report grouped by day or category.')
-    arg_report_by.add_argument('--start', '-s', help='Start date.')
-    arg_report_by.add_argument('--end', '-e', help='End date')
+    arg_report_by.add_argument('--start', '-s', help='Start date in MM-dd-yyyy format.')
+    arg_report_by.add_argument('--end', '-e', help='End date in MM-dd-yyyy format')
     arg_report_by.add_argument('--day', action='store_true', help='Report hours grouped by day.')
     arg_report_by.add_argument('--cat', action='store_true', help='Report hours grouped by category.')
 
